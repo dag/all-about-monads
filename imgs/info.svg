@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"
+[
+ <!ATTLIST svg
+  xmlns:xlink CDATA #FIXED "http://www.w3.org/1999/xlink">
+]>
+<!-- Created with Sodipodi ("http://www.sodipodi.com/") -->
+<svg
+   id="svg101"
+   sodipodi:version="0.31"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   width="300mm"
+   height="300mm"
+   sodipodi:docbase="/home/jnewbern/haskell/monads/imgs/"
+   sodipodi:docname="/home/jnewbern/haskell/monads/imgs/info.svg">
+  <defs
+     id="defs103" />
+  <sodipodi:namedview
+     id="base" />
+  <g
+     id="g124"
+     transform="translate(16.3803,25.7405)">
+    <rect
+       style="font-size:12;fill:#afafaf;fill-rule:evenodd;stroke:#0000ff;stroke-width:3.99111;stroke-linejoin:round;stroke-opacity:1;"
+       id="rect111"
+       width="65.625015"
+       height="65.624976"
+       x="203.522995"
+       y="579.978948"
+       transform="matrix(13.6229,0,0,13.6229,-2706.23,-7837.67)" />
+    <text
+       style="font-size:72;font-style:italic;font-weight:bold;fill:#0000ff;stroke-width:1pt;font-family:Georgia;text-anchor:start;writing-mode:lr;fill-opacity:1;"
+       x="222.303955"
+       y="637.104492"
+       id="text104"
+       transform="matrix(13.6229,0,0,13.6229,-2699.95,-7804.66)">
+      <tspan
+         x="222.304"
+         y="637.104"
+         sodipodi:role="line"
+         id="tspan122"
+         style="fill:#0000ff;fill-opacity:1;">
+i</tspan>
+    </text>
+  </g>
+</svg>

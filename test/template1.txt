@@ -1,0 +1,4 @@
+this is just plain text, it contains $, | and [ but no actual
+template!
+
+= boring but necessary test

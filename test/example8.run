@@ -1,0 +1,7 @@
+#!/bin/sh
+
+$1 7  'double'                   
+$1 10 'halve square negate'      
+$1 0  'incr double square'       
+$1 2  'square square square decr'
+$1 45 'halve cube negate'        

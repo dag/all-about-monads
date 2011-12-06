@@ -1,0 +1,3 @@
+#!/bin/sh
+
+$1 7f beef 10 able f00d

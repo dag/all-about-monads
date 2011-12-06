@@ -1,0 +1,3 @@
+Test nested patterns:
+$<template${which}.txt>
+====

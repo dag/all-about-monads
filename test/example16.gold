@@ -1,0 +1,77 @@
+
+this is just plain text, it contains $, | and [ but no actual
+template!
+
+= boring but necessary test
+Haskell
+Test that we can use the [inclusion] mechanism:
+$<#2>
+
+Test that we can use the [inclusion] mechanism:
+
+Test that we can use the variable substitution:
+variable = 
+var      = 
+
+======
+Test that we can use the variable substitution:
+variable = 
+var      = 
+
+Test that we can use the variable substitution:
+variable = 
+var      = dog
+
+Test that we can use the variable substitution:
+variable = 
+var      = dog
+Test quoted inclusion as well: 
+Test that we can use the variable substitution:
+variable = ${variable}
+var      = ${var}
+
+Test nested patterns:
+
+Test that we can use the [inclusion] mechanism:
+
+Test that we can use the variable substitution:
+variable = 
+var      = 
+
+
+====
+Test nested patterns:
+
+Test that we can use the [inclusion] mechanism:
+
+Test that we can use the variable substitution:
+variable = 
+var      = 
+
+
+====
+Test that we can introduce/override variables during inclusion:
+
+Test nested patterns:
+
+Test that we can use the [inclusion] mechanism:
+
+Test that we can use the variable substitution:
+variable = 
+var      = bird
+
+
+====
+
+Test that we can introduce/override variables during inclusion:
+
+Test nested patterns:
+
+Test that we can use the [inclusion] mechanism:
+
+Test that we can use the variable substitution:
+variable = cat
+var      = bird
+
+
+====

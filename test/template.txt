@@ -1,0 +1,29 @@
+[#1]
+this is just plain text, it contains $, | and [ but no actual
+template!
+
+= boring but necessary test
+[END]
+
+[#2]
+Test that we can use the variable substitution:
+variable = ${variable}
+var      = ${var}
+[END]
+
+[#3]
+Test that we can use the [inclusion] mechanism:
+$<#2>
+[END]
+
+[#4]Test quoted inclusion as well: $"#2"[END]
+
+[#5]
+Test nested patterns:
+$<#${which}>
+====[END]
+
+[#6]
+Test that we can introduce/override variables during inclusion:
+$<#${which}|var=bird,which=3>
+[END]

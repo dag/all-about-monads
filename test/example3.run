@@ -1,0 +1,6 @@
+#!/bin/sh
+
+$1 mother
+$1 father
+$1 mother mother father
+$1 father mother

@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Exercises</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="laws.html">The monad laws</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="monadfns.html">Monad support in Haskell</a></td>
+</tr>
+</table>	
+
+<h1>Exercises</h1>
+<ol>
+<li><a href="#exercise1">Do notation</a></li>
+<li><a href="#exercise2">Combining monadic values</a></li>
+<li><a href="#exercise3">Using the List monad</a></li>
+<li><a href="#exercise4">Using the Monad class constraint</a></li>
+</ol>
+
+<hr align="center" size="1" width="80%">
+
+<p>
+This section contains a few simple exercises to hone the
+reader's monadic reasoning skills and to provide a solid comprehension
+of the function and use of the Maybe and List monads before looking at
+monadic programming in more depth.  The exercises will build on the previous
+sheep-cloning <a href="../examples/example2.hs">example</a>, with which
+the reader should already be familiar.
+</p>
+
+<a name="exercise1"><h2>Exercise 1: Do notation</h2></a>
+
+<p>
+Rewrite the <code>maternalGrandfather</code>,
+<code>fathersMaternalGrandmother</code>, and
+<code>mothersPaternalGrandfather</code> functions in <a href="../examples/example2.hs">Example 2</a>
+using the monadic operators <code>return</code> and <code>>>=</code>,
+without using any do-notation syntactic sugar.
+<p>
+
+<p>
+Click <a href="solution1.html">here</a> to see the solution.
+</p>
+
+<a name="exercise2"><h2>Exercise 2: Combining monadic values</h2></a>
+
+<p>
+Write functions <code>parent</code> and <code>grandparent</code> with
+signature <code>Sheep&nbsp;->&nbsp;Maybe&nbsp;Sheep</code>.  They
+should return one sheep selected from all sheep matching the description, or
+<code>Nothing</code> if there is no such sheep.  Hint: the
+<code>mplus</code> operator is useful here.
+</p>
+
+<p>
+Click <a href="solution2.html">here</a> to see the solution.
+</p>
+
+<a name="exercise3"><h2>Exercise 3: Using the List monad</h2></a>
+
+<p>
+Write functions <code>parent</code> and <code>grandparent</code> with
+signature <code>Sheep&nbsp;->&nbsp;[Sheep]</code>.  They
+should return all sheep matching the description, or the empty list
+if there is no such sheep.  Hint: the <code>mplus</code> operator in the List
+monad is useful here.  Also the <code>maybeToList</code> function in
+the <code>Maybe</code> module can be used to convert a value from the
+Maybe monad to the List monad.
+</p>
+
+<p>
+Click <a href="solution3.html">here</a> to see the solution.
+</p>
+
+<a name="exercise4"><h2>Exercise 4: Using the Monad class constraint</h2></a>
+
+<p>
+Monads promote modularity and code reuse by encapsulating often-used
+computational strategies into single blocks of code that can be used
+to construct many different computations.  Less obviously, monads also
+promote modularity by allowing you to vary the monad in which a
+computation is done to achieve different variations of the computation.
+This is achieved by writing functions which are polymorphic in the
+monad type constructor, using the <code>(Monad&nbsp;m)&nbsp;=></code>,
+<code>(MonadPlus&nbsp;m)&nbsp;=></code>, etc. class constraints.
+</p>
+
+<p>
+Write functions <code>parent</code> and <code>grandparent</code> with
+signature <code>(MonadPlus&nbsp;m)&nbsp;=>&nbsp;Sheep&nbsp;->&nbsp;m&nbsp;Sheep</code>.  They
+should be useful in both the Maybe and List monads.  How does the
+functions' behavior differ when used with the List monad versus the
+Maybe monad?  If you need to review the use of type classes and class
+constraints in Haskell, look
+<a href="http://www.haskell.org/tutorial/classes.html">here</a>.
+</p>
+
+<p>
+Click <a href="solution4.html">here</a> to see the solution.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="laws.html">The monad laws</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="monadfns.html">Monad support in Haskell</a></td>
+</tr>
+</table>	
+
+</body>
+</html>		

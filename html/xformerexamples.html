@@ -1,0 +1,320 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>More examples with monad transformers</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="xformeranatomy.html">Anatomy of a monad transformer</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="stacking.html">Managing the transformer stack</a></td>
+</tr>
+</table>	
+
+<h1>More examples with monad transformers</h1>
+
+<ul>
+  <li><a href="#example22">WriterT with IO</a></li>
+  <li><a href="#example23">ReaderT with IO</a></li>
+  <li><a href="#example24">StateT with List</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+At this point, you should know everything you need to begin using monads and
+monad transformers in your programs.  The best way to build proficiency is to work
+on actual code.  As your monadic programs become more abitious, you may find
+it awkward to mix additional transformers into your combined monads.  This will be
+addressed in the next section, but first you should master the basic process of
+applying a single transformer to a base monad.
+</p>
+
+<a name="example22"><h2>WriterT with IO</h2></a>
+
+<p>
+Try adapting the <a href="writermonad.html#example">firewall simulator</a> of
+example 17 to include a timestamp on each log entry (don't worry about merging entries).
+The necessary changes should look something like this:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example22.hs">example22.hs</a></th>
+</tr>
+<tr><td><pre>
+-- this is the format of our log entries
+data Entry = Log {<font color="red"><b>timestamp::ClockTime</b></font>, msg::String} deriving Eq
+
+instance Show Entry where
+  show (Log <font color="red"><b>t</b></font> s) = <font color="red"><b>(show t) ++ " | "</b></font> ++ s
+
+<font color="red"><b>-- this is the combined monad type
+type LogWriter a = WriterT [Entry] IO a</b></font>
+
+-- add a message to the log
+logMsg :: String -> <font color="red"><b>LogWriter</b></font> ()
+logMsg s = <font color="red"><b>do t <- liftIO getClockTime</b></font>
+              tell [Log <font color="red"><b>t</b></font> s]
+
+-- this handles one packet
+filterOne :: [Rule] -> Packet -> <font color="red"><b>LogWriter</b></font> (Maybe Packet)
+filterOne rules packet = do rule <- return (match rules packet)
+                            case rule of
+                              Nothing  -> do logMsg ("DROPPING UNMATCHED PACKET: " ++ (show packet))
+                                             return Nothing
+                              (Just r) -> do when (logIt r) (logMsg ("MATCH: " ++ (show r) ++ " <=> " ++ (show packet)))
+                                             case r of
+                                               (Rule Accept _ _) -> return (Just packet)
+                                               (Rule Reject _ _) -> return Nothing
+
+-- this filters a list of packets, producing a filtered packet list
+-- and a log of the activity
+filterAll :: [Rule] -> [Packet] -> <font color="red"><b>LogWriter</b></font> [Packet]
+filterAll rules packets = do logMsg "STARTING PACKET FILTER"
+                             out <- mapM (filterOne rules) packets
+                             logMsg "STOPPING PACKET FILTER"
+                             return (catMaybes out)
+
+-- read the rule data from the file named in the first argument, and the packet data from
+-- the file named in the second argument, and then print the accepted packets followed by
+-- a log generated during the computation.
+main :: IO ()
+main = do args       <- getArgs
+          ruleData   <- readFile (args!!0)
+          packetData <- readFile (args!!1)
+          let rules   = (read ruleData)::[Rule]
+              packets = (read packetData)::[Packet]
+          (out,log) <font color="red"><b><- runWriterT</b></font> (filterAll rules packets)
+          putStrLn "ACCEPTED PACKETS"
+          putStr (unlines (map show out))
+          putStrLn "\n\nFIREWALL LOG"
+          putStr (unlines (map show log))
+</pre></td></tr></table>
+
+<a name="example23"><h2>ReaderT with IO</h2></a>
+
+<p>
+If you found that one too easy, move on to a slightly more complex example:
+convert the <a href="readermonad.html#example">template system</a>
+in example 16 from using a single template file with named templates to
+treating individual files as templates.  One possible solution is shown
+in <a href="../examples/example23.hs">example 23</a>, but try to do it without
+looking first.
+</p>
+
+<a name="example24"><h2>StateT with List</h2></a>
+
+<p>
+The previous examples have all been using the IO monad as the inner monad.
+Here is a more interesting example: combining <code>StateT</code> with the
+List monad to produce a monad for stateful nondeterministic computations.
+</p>
+
+<p>
+We will apply this powerful monad combination to the task of solving
+constraint satisfaction problems (in this case, a logic problem).  The idea
+behind it is to have a number of variables that can take on different values
+and a number of predicates involving those variables that must be satisfied.
+The current variable assignments and the predicates make up the state of the
+computation, and the non-deterministic nature of the List monad allows us to
+easily test all combinations of variable assignments.
+</p>
+
+<p>
+We start by laying the groundwork we will need to represent the logic
+problem, a simple predicate language:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example24.hs">example24.hs</a></th>
+</tr>
+<tr><td><pre>
+-- First, we develop a language to express logic problems
+type Var   = String
+type Value = String
+data Predicate = Is    Var Value            -- var has specific value
+               | Equal Var Var              -- vars have same (unspecified) value
+	       | And   Predicate Predicate  -- both are true
+	       | Or    Predicate Predicate  -- at least one is true
+	       | Not   Predicate            -- it is not true
+  deriving (Eq, Show)
+
+type Variables = [(Var,Value)]
+
+-- test for a variable NOT equaling a value
+isNot :: Var -> Value -> Predicate
+isNot var value = Not (Is var value)
+
+-- if a is true, then b must also be true
+implies :: Predicate -> Predicate -> Predicate
+implies a b = Not (a `And` (Not b))
+
+-- exclusive or
+orElse :: Predicate -> Predicate -> Predicate
+orElse a b = (a `And` (Not b)) `Or` ((Not a) `And` b)
+
+-- Check a predicate with the given variable bindings.
+-- An unbound variable causes a Nothing return value.
+check :: Predicate -> Variables -> Maybe Bool
+check (Is var value) vars = do val <- lookup var vars
+                               return (val == value)
+check (Equal v1 v2)  vars = do val1 <- lookup v1 vars
+                               val2 <- lookup v2 vars
+			       return (val1 == val2)
+check (And p1 p2)    vars = liftM2 (&&) (check p1 vars) (check p2 vars)
+check (Or  p1 p2)    vars = liftM2 (||) (check p1 vars) (check p2 vars)
+check (Not p)        vars = liftM (not) (check p vars)
+</pre></td></tr></table>
+</p>
+
+<p>
+The next thing we will need is some code for representing and solving
+constraint satisfaction problems.  This is where we will define our
+combined monad.
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example24.hs">example24.hs</a></th>
+</tr>
+<tr><td><pre>
+-- this is the type of our logic problem
+data ProblemState = PS {vars::Variables, constraints::[Predicate]}
+
+-- this is our monad type for non-determinstic computations with state
+type NDS a = StateT ProblemState [] a
+
+-- lookup a variable
+getVar :: Var -> NDS (Maybe Value)
+getVar v = do vs <- gets vars
+              return $ lookup v vs
+
+-- set a variable
+setVar :: Var -> Value -> NDS ()
+setVar v x = do st <- get
+                vs' <- return $ filter ((v/=).fst) (vars st)
+                put $ st {vars=(v,x):vs'}
+
+-- Check if the variable assignments satisfy all of the predicates.
+-- The partial argument determines the value used when a predicate returns
+-- Nothing because some variable it uses is not set.  Setting this to True
+-- allows us to accept partial solutions, then we can use a value of
+-- False at the end to signify that all solutions should be complete.
+isConsistent :: Bool -> NDS Bool
+isConsistent partial = do cs <- gets constraints
+                          vs <- gets vars
+                          let results = map (\p->check p vs) cs
+                          return $ and (map (maybe partial id) results)
+
+-- Return only the variable bindings that are complete consistent solutions.
+getFinalVars :: NDS Variables
+getFinalVars = do c <- isConsistent False
+                  guard c
+                  gets vars
+
+-- Get the first solution to the problem, by evaluating the solver computation with
+-- an initial problem state and then returning the first solution in the result list,
+-- or Nothing if there was no solution.
+getSolution :: NDS a -> ProblemState -> Maybe a
+getSolution c i = listToMaybe (evalStateT c i)
+
+-- Get a list of all possible solutions to the problem by evaluating the solver
+-- computation with an initial problem state.
+getAllSolutions :: NDS a -> ProblemState -> [a]
+getAllSolutions c i = evalStateT c i
+</pre></td></tr></table>
+
+<p>
+We are ready to apply the predicate language and stateful nondeterministic monad
+to solving a logic problem.  For this example, we will use the well-known Kalotan
+puzzle which appeared in <i>Mathematical Brain-Teasers</i>, Dover Publications (1976),
+by J. A. H. Hunter.
+
+<blockquote>
+The Kalotans are a tribe with a peculiar quirk: their males always tell the truth.
+Their females never make two consecutive true statements, or two consecutive untrue
+statements.
+
+An anthropologist (let's call him Worf) has begun to study them. Worf does not yet
+know the Kalotan language. One day, he meets a Kalotan (heterosexual) couple and
+their child Kibi. Worf asks Kibi: ``Are you a boy?'' The kid answers in Kalotan,
+which of course Worf doesn't understand.
+
+Worf turns to the parents (who know English) for explanation. One of them says:
+"Kibi said: `I am a boy.'" The other adds: "Kibi is a girl. Kibi lied."
+
+Solve for the sex of Kibi and the sex of each parent.
+</blockquote> 
+</p>
+
+<p>
+We will need some additional predicates specific to this puzzle, and to define
+the universe of allowed variables values: 
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example24.hs">example24.hs</a></th>
+</tr>
+<tr><td><pre>
+-- if a male says something, it must be true
+said :: Var -> Predicate -> Predicate
+said v p = (v `Is` "male") `implies` p
+
+-- if a male says two things, they must be true
+-- if a female says two things, one must be true and one must be false
+saidBoth :: Var -> Predicate -> Predicate -> Predicate
+saidBoth v p1 p2 = And ((v `Is` "male") `implies` (p1 `And` p2))
+                       ((v `Is` "female") `implies` (p1 `orElse` p2))
+
+-- lying is saying something is true when it isn't or saying something isn't true when it is
+lied :: Var -> Predicate -> Predicate
+lied v p = ((v `said` p) `And` (Not p)) `orElse` ((v `said` (Not p)) `And` p)
+
+-- Test consistency over all allowed settings of the variable.
+tryAllValues :: Var -> NDS ()
+tryAllValues var = do (setVar var "male") `mplus` (setVar var "female")
+                      c <- isConsistent True
+                      guard c
+</pre></td></tr></table>
+</p>
+
+<p>
+All that remains to be done is to define the puzzle in the predicate
+language and get a solution that satisfies all of the predicates:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example24.hs">example24.hs</a></th>
+</tr>
+<tr><td><pre>
+-- Define the problem, try all of the variable assignments and print a solution.
+main :: IO ()
+main = do let variables   = []
+              constraints = [ Not (Equal "parent1" "parent2"),
+                              "parent1" `said` ("child" `said` ("child" `Is` "male")),
+                              saidBoth "parent2" ("child" `Is` "female")
+                                                 ("child" `lied` ("child" `Is` "male")) ]
+              problem     = PS variables constraints
+          print $ (`getSolution` problem) $ do tryAllValues "parent1"
+                                               tryAllValues "parent2"
+                                               tryAllValues "child"
+                                               getFinalVars
+</pre></td></tr></table>
+Each call to <code>tryAllValues</code> will fork the solution space,
+assigning the named variable to be <code>"male"</code> in one fork and
+<code>"female"</code> in the other.  The forks which produce inconsistent
+variable assignments are eliminated (using the <code>guard</code> function).
+The call to <code>getFinalVars</code> applies <code>guard</code> again to
+eliminate inconsistent variable assignments and returns the remaining
+assignments as the value of the computation.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="xformeranatomy.html">Anatomy of a monad transformer</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="stacking.html">Managing the transformer stack</a></td>
+</tr>
+</table>	
+
+</body>

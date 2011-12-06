@@ -1,0 +1,27 @@
+Answer: 0
+Answer: 7
+Answer: 9
+Answer: (ns = [5]) 1
+Answer: (ns = [9]) 1
+Answer: (ns = [1,0]) 2
+Answer: (ns = [3,4]) 2
+Answer: (ns = [9,9]) 2
+Enter a number:
+Answer: (ns = [1,0,0]) 37
+Enter a number:
+Answer: (ns = [3,4,2]) 9483
+Enter a number:
+Answer: (ns = [9,9,9,9]) 0
+Answer: 1
+Answer: 10001
+Answer: 71
+Answer: 286814
+Answer: 899999
+Answer: 999999
+Answer: (ns = [1,0,0,0,0,0,0]) 1
+Answer: (ns = [1,0,0,0,0,0,0]) 1
+Answer: (ns = [1,0,0,0,0,0,1]) 2
+Answer: (ns = [1,0,0,0,0,0,1]) 2
+Answer: (ns = [1,0,0,0,0,0,2]) 3
+Answer: (ns = [3,5,0,0,5,0,0]) 13
+Answer: (ns = [3,7,3,1,9,6,3,6,8]) 46

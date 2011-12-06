@@ -1,0 +1,12 @@
+#!/bin/sh
+
+rm -f ex4.defs.*
+echo "feet=2"        >  ex4.defs.1
+echo "hands = 2"     >> ex4.defs.1
+echo "eyes = brown"  >> ex4.defs.1
+echo "hair = brown"  >> ex4.defs.1
+echo "age   = 29"    >  ex4.defs.2
+echo "hands = 2"     >> ex4.defs.2
+echo "hair  = black" >> ex4.defs.2
+$1 ex4.defs.*
+rm -f ex4.defs.*

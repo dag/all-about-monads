@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>The Maybe monad</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="identitymonad.html">The Identity monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="errormonad.html">The Error monad</a></td>
+</tr>
+</table>	
+
+<h1>The Maybe monad</h1>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#definition">Definition</a></li>
+  <li><a href="#example">Example</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<a name="overview"><h2>Overview</h2></a>
+
+<table width="100%" cellpadding="3">
+  <tr>
+    <th align="left">Computation type:</th>
+    <td>Computations which may return <code>Nothing</code></td>
+  </tr>
+  <tr>
+    <th align="left">Binding strategy:</th>
+    <td><code>Nothing</code> values bypass the bound function,
+    other values are used as inputs to the bound function.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Useful for:</th>
+    <td>Building computations from sequences of functions that may return
+    <code>Nothing</code>.  Complex database queries or dictionary lookups
+    are good examples. 
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Zero and plus:</th>
+    <td><code>Nothing</code> is the zero.  The plus operation returns the
+    first non-<code>Nothing</code> value or <code>Nothing</code> is both
+    inputs are <code>Nothing</code>.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Example type:</th>
+    <td><a href="http://www.haskell.org/onlinelibrary/maybe.html">Maybe a</a></td>
+  </tr>
+</table>
+
+<a name="motivation"><h2>Motivation</h2></a>
+
+<p>
+The Maybe monad embodies the strategy of combining a chain of computations that
+may each return <code>Nothing</code> by ending the chain early if any step
+produces <code>Nothing</code> as output.  It is useful when a computation
+entails a sequence of steps that depend on one another, and in which some
+steps may fail to return a value. 
+</p>
+
+<p>
+<img src="info.png" align="left"></img>
+If you ever find yourself writing code like this:<br clear="all">
+<pre>
+case ... of
+  Nothing -> Nothing
+  Just x  -> case ... of
+               Nothing -> Nothing
+               Just y  -> ...
+</pre>
+you should consider using the monadic properties of <code>Maybe</code> to
+improve the code.
+</p>
+
+<a name="definition"><h2>Definition</h2></a>
+
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+data Maybe a = Nothing | Just a
+
+instance Monad Maybe where
+    return         = Just
+    fail           = Nothing
+    Nothing  >>= f = Nothing
+    (Just x) >>= f = f x
+    
+instance MonadPlus Maybe where
+    mzero             = Nothing
+    Nothing `mplus` x = x
+    x `mplus` _       = x
+</pre></td></tr></table>
+
+<a name="example"><h2>Example</h2></a>
+
+<p>
+A common example is in combining dictionary lookups.
+Given a dictionary that maps full names to email
+addresses, another that maps nicknames to email addresses,
+and a third that maps email addresses to email preferences,
+you could create a function that finds a person's email
+preferences based on either a full name or a nickname.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example11.hs">example11.hs</a></th>
+</tr>
+<tr><td><pre>
+data MailPref = HTML | Plain
+data MailSystem = ...
+ 
+getMailPrefs :: MailSystem -> String -> Maybe MailPref
+getMailPrefs sys name =
+  do let nameDB = fullNameDB sys
+         nickDB = nickNameDB sys
+         prefDB = prefsDB sys
+  addr <- (lookup name nameDB) `mplus` (lookup name nickDB)
+  lookup addr prefDB
+</pre></td></tr></table>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="identitymonad.html">The Identity monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="errormonad.html">The Error monad</a></td>
+</tr>
+</table>	
+
+</body>

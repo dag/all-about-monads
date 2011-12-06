@@ -1,0 +1,2 @@
+Test that we can introduce/override variables during inclusion:
+$<template${which}.txt|var=bird,which=3>

@@ -1,0 +1,1 @@
+Test quoted inclusion as well: $"template2.txt"

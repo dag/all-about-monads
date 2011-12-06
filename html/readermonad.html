@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>The Reader monad</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="statemonad.html">The State monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="writermonad.html">The Writer monad</a></td>
+</tr>
+</table>	
+
+<h1>The Reader monad</h1>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#definition">Definition</a></li>
+  <li><a href="#example">Example</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<a name="overview"><h2>Overview</h2></a>
+
+<table width="100%" cellpadding="3">
+  <tr>
+    <th align="left">Computation type:</th>
+    <td>Computations which read values from a shared environment.</td>
+  </tr>
+  <tr>
+    <th align="left">Binding strategy:</th>
+    <td>Monad values are functions from the environment to a value.
+    The bound function is applied to the bound value, and both have
+    access to the shared environment.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Useful for:</th>
+    <td>Maintaining variable bindings, or other shared environment.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Zero and plus:</th>
+    <td>None.</td>
+  </tr>
+  <tr>
+    <th align="left">Example type:</th>
+    <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Reader.html">Reader [(String,Value)] a</a></td>
+  </tr>
+</table>
+
+<a name="motivation"><h2>Motivation</h2></a>
+
+<p>
+Some programming problems require computations within a shared environment
+(such as a set of variable bindings).  These computations typically read
+values from the environment and sometimes execute sub-computations in
+a modified environment (with new or shadowing bindings, for example), but
+they do not require the full generality of the State monad.
+</p>
+
+<p>
+The Reader monad is specifically designed for these types of computations
+and is often a clearer and easier mechanism than using the State monad.
+</p>
+
+<a name="definition"><h2>Definition</h2></a>
+
+<p>
+The definition shown here uses multi-parameter type classes
+and funDeps, which are not standard Haskell 98.  It is not necessary
+to fully understand these details to make use of the Reader monad.
+</p>
+
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+newtype Reader e a = Reader { runReader :: (e -> a) }
+ 
+instance Monad (Reader e) where 
+    return a         = Reader $ \e -> a 
+    (Reader r) >>= f = Reader $ \e -> f (r e) e 
+</pre></td></tr></table>
+
+<p>
+Values in the Reader monad are functions from an environment to a value.
+To extract the final value from a computation in the Reader monad,
+you simply apply <code>(runReader reader)</code> to an environment value.
+</p>
+
+<p>
+The <code>return</code> function creates a <code>Reader</code> that ignores
+the environment and produces the given value.  The binding operator produces
+a <code>Reader</code> that uses the environment to extract the value its
+left-hand side and then applies the bound function to that value in the
+same environment.
+</p>
+ 
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+class MonadReader e m | m -> e where 
+    ask   :: m e
+    local :: (e -> e) -> m a -> m a 
+ 
+instance MonadReader (Reader e) where 
+    ask       = Reader id 
+    local f c = Reader $ \e -> runReader c (f e) 
+ 
+asks :: (MonadReader e m) => (e -> a) -> m a 
+asks sel = ask >>= return . sel
+</pre></td></tr></table>
+
+<p>
+The <code>MonadReader</code> class provides a number of convenience functions
+that are very useful when working with a Reader monad.  The <code>ask</code>
+function retrieves the environment and the <code>local</code> function
+executes a computation in a modified environment.  The <code>asks</code>
+function is a convenience function that retrieves a function of the
+current environment, and is typically used with a selector or lookup function.
+</p>
+
+<a name="example"><h2>Example</h2></a>
+
+<p>
+Consider the problem of instantiating templates which contain variable
+substitutions and included templates.  Using the Reader monad, we can
+maintain an environment of all known templates and all known variable
+bindings.  Then, when a variable substitution is encountered, we can
+use the <code>asks</code> function to lookup the value of the variable.
+When a template is included with new variable definitions, we can use the
+<code>local</code> function to resolve the template in a modified environment
+that contains the additional variable bindings. 
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example16.hs">example16.hs</a></th>
+</tr>
+<tr><td><pre>
+-- This the abstract syntax representation of a template
+--              Text       Variable     Quote        Include                   Compound
+data Template = T String | V Template | Q Template | I Template [Definition] | C [Template]
+data Definition = D Template Template
+
+-- Our environment consists of an association list of named templates and
+-- an association list of named variable values. 
+data Environment = Env {templates::[(String,Template)],
+                        variables::[(String,String)]}
+
+-- lookup a variable from the environment
+lookupVar :: String -> Environment -> Maybe String
+lookupVar name env = lookup name (variables env)
+
+-- lookup a template from the environment
+lookupTemplate :: String -> Environment -> Maybe Template
+lookupTemplate name env = lookup name (templates env)
+
+-- add a list of resolved definitions to the environment
+addDefs :: [(String,String)] -> Environment -> Environment
+addDefs defs env = env {variables = defs ++ (variables env)}
+                      
+-- resolve a Definition and produce a (name,value) pair
+resolveDef :: Definition -> Reader Environment (String,String)
+resolveDef (D t d) = do name <- resolve t
+                        value <- resolve d
+                        return (name,value)
+
+-- resolve a template into a string
+resolve :: Template -> Reader Environment (String)
+resolve (T s)    = return s
+resolve (V t)    = do varName  <- resolve t
+                      varValue <- asks (lookupVar varName)
+		      return $ maybe "" id varValue
+resolve (Q t)    = do tmplName <- resolve t
+                      body     <- asks (lookupTemplate tmplName)
+                      return $ maybe "" show body 
+resolve (I t ds) = do tmplName <- resolve t
+                      body     <- asks (lookupTemplate tmplName)
+                      case body of
+                        Just t' -> do defs <- mapM resolveDef ds
+                                      local (addDefs defs) (resolve t')
+                        Nothing -> return ""
+resolve (C ts)   = (liftM concat) (mapM resolve ts)
+</pre></td></tr></table>
+
+<p>
+To use the Reader monad to resolve a template <code>t</code> into a
+<code>String</code>, you simply need to do <code>runReader (resolve t) env</code>.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="statemonad.html">The State monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="writermonad.html">The Writer monad</a></td>
+</tr>
+</table>	
+
+</body>

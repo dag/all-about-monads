@@ -1,0 +1,5 @@
+#!/bin/sh
+
+$1 "Bill Clinton"
+$1 jacko
+$1 Madonna

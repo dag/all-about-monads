@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Meet the Monads</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="introduction.html">Introduction</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="class.html">Doing it with class</a></td>
+</tr>
+</table>	
+
+<h1>Meet the Monads</h1>
+<ul>
+<li><a href="#typeconstructors">Type constructors</a></li>
+<li><a href="#maybe">Maybe a monad</a></li>
+<li><a href="#list">A list is also a monad</a></li>
+<li><a href="#example1">An example</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<p>We will use the <code>Maybe</code> type constructor
+throughout this chapter, so you should familiarize yourself with the
+definition and usage of
+<a href="http://www.haskell.org/onlinelibrary/maybe.html">
+<code>Maybe</code></a> before continuing.
+</p>
+
+<a name="typeconstructors"><h2>Type constructors</h2></a>
+
+<p>
+To understand monads in Haskell, you need to be comfortable dealing with
+type constructors.  A <em>type constructor</em> is a parameterized type
+definition used with polymorphic types.  By supplying a type constructor
+with one or more concrete types, you can construct a new concrete type
+in Haskell.  In the definition of <code>Maybe</code>:
+<pre>
+  data Maybe a = Nothing | Just a
+</pre>
+<code>Maybe</code> is a type constructor and <code>Nothing</code>
+and <code>Just</code> are data constructors.  You can construct a data value
+by applying the <code>Just</code> data constructor to a value:
+<pre>
+  country = Just "China"
+</pre>
+In the same way, you can construct a type by applying the <code>Maybe</code> 
+type constructor to a type:
+<pre>
+  lookupAge :: DB -> String -> Maybe Int
+</pre>
+</p>
+
+<p>
+Polymorphic types are like containers that are capable of holding values
+of many different types.  So <code>Maybe Int</code> can be thought of as
+a <code>Maybe</code> container holding an <code>Int</code> value (or
+<code>Nothing</code>) and <code>Maybe String</code> would be a <code>Maybe</code>
+container holding a <code>String</code> value (or <code>Nothing</code>).
+In Haskell, we can also make the type of the container polymorphic, so we
+could write "<code>m a</code>" to represent a container of some type holding
+a value of some type!
+</p>
+
+<p>
+We often use type variables with type constructors to describe abstract features
+of a computation.  For example, the polymorphic type <code>Maybe a</code> is
+the type of all computations that may return a value or <code>Nothing</code>.
+In this way, we can talk about the properties of the container apart from any
+details of what the container might hold.
+</p>
+
+<p>
+<img src="info.png" align="left"></img>
+If you get messages about "kind errors" from the compiler when working with
+monads, it means that you are not using the type constructors correctly.
+<br clear="all"></p>
+
+<a name="maybe"><h2>Maybe a monad</h2></a>
+
+<p>In Haskell a monad is represented as a type constructor
+(call it <code>m</code>), a function that builds values of that type
+(<code>a&nbsp;->&nbsp;m&nbsp;a</code>), and a function that combines values
+of that type with computations that produce values of that type to
+produce a new computation for values of that type
+(<code>m&nbsp;a&nbsp;->&nbsp;(a&nbsp;->&nbsp;m&nbsp;b)&nbsp;->&nbsp;m&nbsp;b</code>).
+Note that the container is the same, but the type of the contents of the container
+can change.  It is customary to call the monad type constructor "<code>m</code>" when
+discussing monads in general.  The function that builds values of that
+type is traditionally called "<code>return</code>" and the third function is known
+as "bind" but is written "<code>>>=</code>".  The signatures of the functions are:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- the type of monad m
+data m a = ... 
+
+-- return is a type constructor that creates monad instances 
+return :: a -> m a
+
+-- bind is a function that combines a monad instance m a with a computation
+-- that produces another monad instance m b from a's to produce a new
+-- monad instance m b
+(>>=) :: m a -> (a -> m b) -> m b
+</pre></td></tr></table>
+</p>
+
+<p>
+Roughly speaking, the monad type constructor defines a type of computation, the
+<code>return</code> function creates primitive values of that
+computation type and <code>>>=</code> combines computations of that
+type together to make more complex computations of that type.  
+Using the container analogy, the type constructor <code>m</code> is a
+container that can hold different values.  <code>m a</code> is a container holding
+a value of type <code>a</code>.  The <code>return</code> function
+puts a value into a monad container.  The <code>>>=</code> function
+takes the value from a monad container and passes it to a function to
+produce a monad container containing a new value, possibly of a different
+type.  The <code>>>=</code> function is known as "bind" because it
+binds the value in a monad container to the first argument of a
+function.  By adding logic to the binding function, a monad can implement
+a specific strategy for combining computations in the monad.
+</p>
+
+<p>
+This will all become clearer after the example below, but if you feel
+particularly confused at this point you might try looking at
+this <a href="analogy.html">physical analogy of a monad</a>
+before continuing.
+</p>
+
+<a name="example1"><h2>An example</h2></a>
+
+<p>
+Suppose that we are writing a program to keep track of sheep cloning
+experiments.  We would certainly want to know the genetic history of all
+of our sheep, so we would need <code>mother</code> and <code>father</code>
+functions.  But since these are cloned sheep, they may not always have both a
+mother and a father!
+</p>
+
+<p>
+We would represent the possibility of not having a mother or father
+using the <code>Maybe</code> type constructor in our Haskell code:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+type Sheep = ...
+
+father :: Sheep -> Maybe Sheep
+father = ...
+
+mother :: Sheep -> Maybe Sheep
+mother = ...
+</pre></td></tr></table>
+</p>
+
+<p>
+Then, defining functions to find grandparents is a little more complicated,
+because we have to handle the possibility of not having a parent:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+maternalGrandfather :: Sheep -> Maybe Sheep
+maternalGrandfather s = case (mother s) of
+                          Nothing -> Nothing
+                          Just m  -> father m
+</pre></td></tr></table>
+and so on for the other grandparent combinations.
+</p>
+
+<p>
+It gets even worse if we want to find great grandparents:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+mothersPaternalGrandfather :: Sheep -> Maybe Sheep
+mothersPaternalGrandfather s = case (mother s) of
+                                 Nothing -> Nothing
+                                 Just m  -> case (father m) of
+                                              Nothing -> Nothing
+                                              Just gf -> father gf
+</pre></td></tr></table>
+</p>
+
+<p>
+Aside from being ugly, unclear, and difficult to maintain, this is
+just too much work.  It is clear that a <code>Nothing</code> value at
+any point in the computation will cause <code>Nothing</code> to be the
+final result, and it would be much nicer to implement this notion
+once in a single place and remove all of the explicit <code>case</code>
+testing scattered all over the code.  This will make the code easier
+to write, easier to read and easier to change.  So good programming
+style would have us create a combinator that captures the behavior
+we want:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example1.hs">example1.hs</a></th>
+</tr>
+<tr><td><pre>
+-- comb is a combinator for sequencing operations that return Maybe
+comb :: Maybe a -> (a -> Maybe b) -> Maybe b
+comb Nothing  _ = Nothing
+comb (Just x) f = f x
+
+-- now we can use `comb` to build complicated sequences
+mothersPaternalGrandfather :: Sheep -> Maybe Sheep
+mothersPaternalGrandfather s = (Just s) `comb` mother `comb` father `comb` father 
+</pre></td></tr></table>
+</p>
+
+<p>The combinator is a huge success!  The code is much cleaner and easier
+to write, understand and modify.  Notice also that the <code>comb</code> function
+is entirely polymorphic &mdash; it is not specialized for <code>Sheep</code> in any
+way.  In fact, <em>the combinator captures a general strategy for combining
+computations that may fail to return a value.</em>  Thus, we can apply the
+same combinator to other computations that may fail to return a value,
+such as database queries or dictionary lookups.
+</p>
+
+<p>
+The happy outcome is that common sense programming practice has led us to
+create a monad without even realizing it.  The <code>Maybe</code> type
+constructor along with the <code>Just</code> function
+(acts like <code>return</code>) and our combinator (acts like <code>>>=</code>)
+together form a simple monad for building computations which may not return
+a value.  All that remains to make this monad truly useful is to
+make it conform to the monad framework built into the Haskell language.
+That is the subject of the next chapter.
+</p>
+
+<a name="list"><h2>A list is also a monad</h2></a>
+
+<p>
+We have seen that the <code>Maybe</code> type constructor is a monad
+for building computations which may fail to return a value.  You may
+be surprised to know that another common Haskell type constructor,
+<code>[]</code> (for building lists), is also a monad.  The List monad
+allows us to build computations which can return 0, 1, or more values.
+</p> 
+
+<p>
+The <code>return</code> function for lists simply creates a singleton list
+(<code>return&nbsp;x&nbsp;=&nbsp;[x]</code>).  The binding operation
+for lists creates a new list containing the results of applying the function
+to all of the values in the original list
+(<code>l&nbsp;>>=&nbsp;f&nbsp;=&nbsp;concatMap&nbsp;f&nbsp;l</code>).
+</p>
+
+<p>
+One use of functions which return lists is to represent
+<em>ambiguous</em> computations &mdash; that is computations which may
+have 0, 1, or more allowed outcomes.  In a computation composed from
+ambigous subcomputations, the ambiguity may compound, or it may
+eventually resolve into a single allowed outcome or no allowed outcome
+at all.  During this process, the set of possible computational states
+is represented as a list.  The List monad thus embodies a strategy for
+performing simultaneous computations along all allowed paths of an
+ambiguous computation.
+</p>
+
+<p>
+Examples of this use of the List monad, and contrasting examples using
+the Maybe monad will be presented shortly.  But first, we must see how
+useful monads are defined in Haskell.
+</p>
+
+<a name="summary"><h2>Summary</h2></a>
+
+<p>
+We have seen that a monad is a type constructor, a function called
+<code>return</code>, and a combinator function called <code>bind</code>
+or <code>>>=</code>.  These three elements work together to encapsulate
+a strategy for combining computations to produce more complex computations.
+</p>
+
+<p>
+Using the <code>Maybe</code> type constructor, we saw how good programming
+practice led us to define a simple monad that could be used to build complex
+computations out of sequences of computations that could each fail to return a
+value.  The resulting <code>Maybe</code> monad encapsulates a strategy for
+combining computations that may not return values.  By codifying the strategy
+in a monad, we have achieved a degree of modularity and flexibility that
+is not present when the computations are combined in an ad hoc manner.
+</p>
+
+<p>
+We have also seen that another common Haskell type constructor, <code>[]</code>,
+is a monad.  The List monad encapsulates a strategy for combining computations
+that can return 0, 1, or multiple values.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="introduction.html">Introduction</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="class.html">Doing it with class</a></td>
+</tr>
+</table>	
+
+</body>
+</html>

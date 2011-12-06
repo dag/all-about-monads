@@ -1,0 +1,8 @@
+#!/bin/sh
+
+$1 'depth' '[[("name","test"),("depth","2")], [("depth","1")]]'
+$1 'width' '[[("name","test"),("depth","2")], [("depth","1")]]'
+$1 'var3'  '[[("var1","value1"),("var2","value2*")], [("var2","value2"),("var3","value3")]]'
+$1 'var2'  '[[("var1","value1"),("var2","value2*")], [("var2","value2"),("var3","value3")]]'
+$1 'var1'  '[[("var1","value1"),("var2","value2*")], [("var2","value2"),("var3","value3")]]'
+$1 'var'   '[[("var1","value1"),("var2","value2*")], [("var2","value2"),("var3","value3")]]'

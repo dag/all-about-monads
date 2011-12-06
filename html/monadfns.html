@@ -1,0 +1,565 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Monad support in Haskell</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="exercises.html">Exercises</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="introII.html">Part II - Introduction</a></td>
+</tr>
+</table>	
+
+<h1>Monad support in Haskell</h1>
+<ul>
+  <li><a href="#prelude">In the standard prelude</a></li>
+  <li><a href="#monad">In the Monad module</a></li>
+  <li><a href="#summary">Summary</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<p>
+Haskell's built in support for monads is split among the standard prelude,
+which exports the most common monad functions, and the Monad module, which
+contains less-commonly used monad functions.  The individual monad types
+are each in their own libraries and are the subject of
+<a href="introII.html">Part II</a> of this tutorial. 
+</p>
+
+<a name="prelude"><h2>In the standard prelude</h2></a>
+
+<p>
+The Haskell 98
+<a href="http://www.haskell.org/onlinelibrary/standard-prelude.html">standard prelude</a>
+includes the definition of the <code>Monad</code> class as well as a few
+auxilliary functions for working with monadic data types.
+</p>
+
+<h3>The <code>Monad</code> class</h3>
+
+<p>
+We have seen the <code>Monad</code> class before:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+class  Monad m  where
+    (>>=)  :: m a -> (a -> m b) -> m b
+    (>>)   :: m a -> m b -> m b
+    return :: a -> m a
+    fail   :: String -> m a
+
+        -- Minimal complete definition:
+        --      (>>=), return
+    m >> k  =  m >>= \_ -> k
+    fail s  = error s
+</pre></td></tr></table>
+</p>
+
+<h3>The sequencing functions</h3>
+
+<p>
+The <code>sequence</code> function takes a list of monadic computations,
+executes each one in turn and returns a list of the results.  If any
+of the computations fail, then the whole function fails:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+sequence :: Monad m => [m a] -> m [a] 
+sequence = foldr mcons (return [])
+             where mcons p q = p >>= \x -> q >>= \y -> return (x:y)
+</pre></td></tr></table>
+</p>
+
+<p>
+The <code>sequence_</code> function (notice the underscore) has
+the same behavior as <code>sequence</code> but does not return
+a list of results.  It is useful when only the side-effects of the
+monadic computations are important.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+sequence_ :: Monad m => [m a] -> m () 
+sequence_ = foldr (>>) (return ())
+</pre></td></tr></table>
+</p>
+
+<h3>The mapping functions</h3>
+
+<p>
+The <code>mapM</code> function maps a monadic computation over a list
+of values and returns a list of the results.  It is defined in
+terms of the list <code>map</code> function and the <code>sequence</code>
+function above:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+mapM :: Monad m => (a -> m b) -> [a] -> m [b] 
+mapM f as = sequence (map f as)
+</pre></td></tr></table>
+</p>
+
+<p>
+There is also a version with an underscore, <code>mapM_</code> which
+is defined using </code>sequence_</code>.  <code>mapM_</code> operates
+the same as <code>mapM</code>, but it doesn't return the list of values.
+It is useful when only the side-effects of the monadic computation are
+important.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+mapM_ :: Monad m => (a -> m b) -> [a] -> m () 
+mapM_ f as = sequence_ (map f as)
+</pre></td></tr></table>
+</p>
+
+<p>
+As a simple example of the use the mapping functions, a <code>putString</code>
+function for the <code>IO</code> monad could be defined as:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+putString :: [Char] -> IO ()
+putString s = mapM_ putChar s
+</pre></td></tr></table>
+</p>
+
+<p>
+<code>mapM</code> can be used within a do block in a manner similar to
+the way the <code>map</code> function is normally used on lists.  This
+is a common pattern with monads &mdash; a version of a function for use within
+a monad (i.e., intended for binding) will have a signature similar to
+the non-monadic version but the function outputs will be within the monad:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- compare the non-monadic and monadic signatures
+map  ::            (a -> b)   -> [a] -> [b]
+mapM :: Monad m => (a -> m b) -> [a] -> m [b] 
+</pre></td></tr></table>
+</p>
+
+<h3>The reverse binder function (<code>=&lt;&lt;</code>)</h3>
+
+<p>
+The prelude also defines a binding function that takes it arguments
+in the opposite order to the standard binding function.  Since the
+standard binding function is called "<code>>>=</code>", the reverse
+binding function is called "<code>=&lt;&lt;</code>".  It is useful
+in circumstances where the binding operator is used as a higher-order
+term and it is more convenient to have the arguments in the reversed
+order.  Its definition is simply:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+(=<<) :: Monad m => (a -> m b) -> m a -> m b
+f =<< x = x >>= f
+</pre></td></tr></table>
+</p>
+
+<a name="monad"><h2>In the Monad module</h2></a>
+
+<p>
+The <code>Monad</code> module in the standard Haskell 98
+libraries exports a number of facilities for more advanced
+monadic operations.  To access these facilities, simply
+<code>import Monad</code> in your Haskell program.
+</p>
+
+<p>
+Not all of the function in the <code>Monad</code> module
+are discussed here, but you are encouraged to
+<a href="http://www.haskell.org/onlinelibrary/monad.html">explore the module
+for yourself</a> when you feel you are ready to see some of the
+more esoteric monad functions.
+</p>
+
+<h3>The <code>MonadPlus</code> class</h3>
+
+<p>
+The <code>Monad</code> module defines the <code>MonadPlus</code>
+class for monads with a zero element and a plus operator:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+class Monad m => MonadPlus m where
+    mzero :: m a
+    mplus :: m a -> m a -> m a
+</pre></td></tr></table>
+</p>
+
+<h3>Monadic versions of list functions</h3>
+
+<p>
+Several functions are provided which generalize standard list-processing
+functions to monads.  The <code>mapM</code> functions are exported in
+the standard prelude and were described above.
+</p>
+
+<p>
+<code>foldM</code> is a monadic version of <code>foldl</code> in which
+monadic computations built from a list are bound left-to-right.  The definition
+is:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+foldM :: (Monad m) => (a -> b -> m a) -> a -> [b] -> m a
+foldM f a []     = return a
+foldM f a (x:xs) = f a x >>= \y -> foldM f y xs
+</pre></td></tr></table>
+but it is easier to understand the operation of <code>foldM</code>
+if you consider its effect in terms of a do block:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- this is not valid Haskell code, it is just for illustration
+foldM f a1 [x1,x2,...,xn] = do a2 <- f a1 x1
+                               a3 <- f a2 x2
+                               ...
+                               f an xn
+</pre></td></tr></table>
+Right-to-left binding is achieved by reversing the input list
+before calling <code>foldM</code>.
+</p>
+
+<p>
+<a name="example3">We</a> can use <code>foldM</code> to create a more poweful
+query function in our sheep cloning example:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example3.hs">example3.hs</a></th>
+</tr>
+<tr><td><pre>
+-- traceFamily is a generic function to find an ancestor
+traceFamily :: Sheep -> [ (Sheep -> Maybe Sheep) ] -> Maybe Sheep
+traceFamily s l = foldM getParent s l
+  where getParent s f = f s
+
+-- we can define complex queries using traceFamily in an easy, clear way
+mothersPaternalGrandfather s = traceFamily s [mother, father, father]
+paternalGrandmother s = traceFamily s [father, mother]
+</pre></td></tr></table>
+The <code>traceFamily</code> function uses <code>foldM</code> to create a simple
+way to trace back in the family tree to any depth and in any pattern.
+In fact, it is probably clearer to write "<code>traceFamily s [father, mother]</code>"
+than it is to use the <code>paternalGrandmother</code> function!
+</p>
+
+<p>
+<a name="example4">A</a> more typical use of <code>foldM</code> is within a do block:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example4.hs">example4.hs</a></th>
+</tr>
+<tr><td><pre>
+-- a Dict is just a finite map from strings to strings
+type Dict = FiniteMap String String
+
+-- this an auxilliary function used with foldl
+addEntry :: Dict -> Entry -> Dict
+addEntry d e = addToFM d (key e) (value e)
+
+-- this is an auxiliiary function used with foldM inside the IO monad
+addDataFromFile :: Dict -> Handle -> IO Dict
+addDataFromFile dict hdl = do contents <- hGetContents hdl
+                              entries  <- return (map read (lines contents))
+                              return (foldl (addEntry) dict entries)
+
+-- this program builds a dictionary from the entries in all files named on the
+-- command line and then prints it out as an association list
+main :: IO ()
+main = do files   <- getArgs
+          handles <- mapM openForReading files
+          dict    <- foldM addDataFromFile emptyFM handles
+          print (fmToList dict)
+</pre></td></tr></table>
+</p>
+
+<p>
+The <code>filterM</code> function works like the list <code>filter</code>
+function inside of a monad.  It takes a predicate function which returns a
+Boolean value in the monad and a list of values.  It returns, inside
+the monad, a list of those values for which the predicate was True.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
+filterM p []     = return []
+filterM p (x:xs) = do b  <- p x
+                      ys <- filterM p xs
+                      return (if b then (x:ys) else ys)
+</pre></td></tr></table>
+</p>
+
+<p>
+<a name="example5">Here</a> is an example showing how <code>filterM</code> can be used
+within the <code>IO</code> monad to select only the directories from a list:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example5.hs">example5.hs</a></th>
+</tr>
+<tr><td><pre>
+import Monad
+import Directory
+import System
+
+-- NOTE: doesDirectoryExist has type FilePath -> IO Bool
+
+-- this program prints only the directories named on the command line
+main :: IO ()
+main = do names <- getArgs
+          dirs  <- filterM doesDirectoryExist names
+          mapM_ putStrLn dirs
+</pre></td></tr></table>
+</p>
+
+<p>
+<code>zipWithM</code> is a monadic version of the <code>zipWith</code> function
+on lists.  <code>zipWithM_</code> behaves the same but discards the output
+of the function.  It is useful when only the side-effects of the monadic computation
+matter.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+zipWithM ::(Monad m) => (a -> b -> m c) -> [a] -> [b] -> m [c]
+zipWithM f xs ys = sequence (zipWith f xs ys)
+
+zipWithM_ ::(Monad m) => (a -> b -> m c) -> [a] -> [b] -> m ()
+zipWithM_ f xs ys = sequence_ (zipWith f xs ys)
+</pre></td></tr></table>
+</p>
+
+<h3>Conditional monadic computations</h3>
+
+<p>
+There are two functions provided for conditionally executing
+monadic computations.  The <code>when</code> function takes a
+boolean argument and a monadic computation with unit "()" type
+and performs the computation only when the boolean argument is
+<code>True</code>.  The <code>unless</code> function does
+the same, except that it performs the computation <em>unless</em> the
+boolean argument is <code>True</code>.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+when :: (Monad m) => Bool -> m () -> m ()
+when p s = if p then s else return ()
+
+unless :: (Monad m) => Bool -> m () -> m ()
+unless p s = when (not p) s
+</pre></td></tr></table>
+</p>
+
+<h3><code>ap</code> and the lifting functions</h3>
+
+<p>
+<em>Lifting</em> is a monadic operation that converts a non-monadic
+function into an equivalent function that operates on monadic values.
+We say that a function is "lifted into the monad" by the lifting operators.
+A lifted function is useful for operating on monad values outside
+of a do block and can also allow for cleaner code within a do block.
+</p>
+
+<p>
+The simplest lifting operator is <code>liftM</code>, which lifts a
+function of a single argument into a monad.
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+liftM :: (Monad m) => (a -> b) -> (m a -> m b)
+liftM f = \a -> do { a' <- a; return (f a') }
+</pre></td></tr></table>
+</p>
+
+<p>
+Lifting operators are also provided for functions with more arguments.
+<code>liftM2</code> lifts functions of two arguments:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+liftM2 :: (Monad m) => (a -> b -> c) -> (m a -> m b -> m c)
+liftM2 f = \a b -> do { a' <- a; b' <- b; return (f a' b') }
+</pre></td></tr></table>
+The same pattern is applied to give the definitions to lift
+functions of more arguments.  Functions up to <code>liftM5</code> are defined
+in the <code>Monad</code> module.
+</p>
+
+<p>
+<a name="example6"></a>
+To see how the lifting operators allow more concise code, consider a
+computation in the <code>Maybe</code> monad in which you want to use
+a function <code>swapNames::String&nbsp;->&nbsp;String</code>.  You could
+do:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+getName :: String -> Maybe String
+getName name = do let db = [("John", "Smith, John"), ("Mike", "Caine, Michael")]
+                  tempName <- lookup name db
+                  return (swapNames tempName)
+</pre></td></tr></table>
+But making use of the <code>liftM</code> function, we can use
+<code>liftM&nbsp;swapNames</code> as a function of type
+<code>Maybe&nbsp;String&nbsp;->&nbsp;Maybe&nbsp;String</code>:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example6.hs">example6.hs</a></th>
+</tr>
+<tr><td><pre>
+getName :: String -> Maybe String
+getName name = do let db = [("John", "Smith, John"), ("Mike", "Caine, Michael")]
+                  liftM swapNames (lookup name db)
+</pre></td></tr></table>
+The difference is even greater when lifting functions with more arguments.
+</p>
+
+<p>
+<a name="example7"></a>
+The lifting functions also enable very concise constructions using
+higher-order functions.  To understand this example code,
+you might need to review the definition of the monad functions for the
+<a href="listmonad.html#definition">List monad</a> (particularly <code>>>=</code>).
+Imagine how you might implement this function without lifting the operator:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example7.hs">example7.hs</a></th>
+</tr>
+<tr><td><pre>
+-- allCombinations returns a list containing the result of
+-- folding the binary operator through all combinations
+-- of elements of the given lists
+-- For example, allCombinations (+) [[0,1],[1,2,3]] would be
+--   [0+1,0+2,0+3,1+1,1+2,1+3], or [1,2,3,2,3,4]
+-- and allCombinations (*) [[0,1],[1,2],[3,5]] would be
+--   [0*1*3,0*1*5,0*2*3,0*2*5,1*1*3,1*1*5,1*2*3,1*2*5], or [0,0,0,0,3,5,6,10]
+allCombinations :: (a -> a -> a) -> [[a]] -> [a]
+allCombinations fn []     = []
+allCombinations fn (l:ls) = foldl (liftM2 fn) l ls
+</pre></td></tr></table>
+</p>
+
+<p>
+There is a related function called <code>ap</code> that is sometimes
+more convenient to use than the lifting functions.  <code>ap</code>
+is simply the function application operator (<code>$</code>) lifted
+into the monad:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+ap :: (Monad m) => m (a -> b) -> m a -> m b
+ap = liftM2 ($)
+</pre></td></tr></table>
+Note that <code>liftM2&nbsp;f&nbsp;x&nbsp;y</code> is equivalent to
+<code>return&nbsp;f&nbsp;`ap`&nbsp;x&nbsp;`ap`&nbsp;y</code>, and so on for
+functions of more arguments.  <code>ap</code> is useful when
+working with higher-order functions and monads.
+</p>
+
+<a name="example8"></a>
+<p>
+The effect of <code>ap</code> depends on the strategy of the monad in
+which it is used.  So for example <code>[(*2),(+3)]&nbsp;`ap`&nbsp[0,1,2]</code>
+is equal to <code>[0,2,4,3,4,5]</code> and
+<code>(Just&nbsp;(*2))&nbsp;`ap`&nbsp;(Just&nbsp;3)</code> is <code>Just&nbsp;6</code>.
+Here is a simple example that shows how <code>ap</code> can be useful
+when doing higher-order computations:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example8.hs">example8.hs</a></th>
+</tr>
+<tr><td><pre>
+-- lookup the commands and fold ap into the command list to
+-- compute a result.
+main :: IO ()
+main = do let fns  = [("double",(2*)),      ("halve",(`div`2)),
+                      ("square",(\x->x*x)), ("negate", negate),
+                      ("incr",(+1)),        ("decr",(+(-1)))
+                     ]
+          args <- getArgs
+          let val  = read (args!!0)
+              cmds = map ((flip lookup) fns) (words (args!!1))
+          print $ foldl (flip ap) (Just val) cmds
+</pre></td></tr></table>
+</p>
+
+<h3>Functions for use with <code>MonadPlus</code></h3>
+
+<p>
+There are two functions in the <code>Monad</code> module that are
+used with monads that have a zero and a plus.  The first function
+is <code>msum</code>, which is analogous to the <code>sum</code>
+function on lists of integers.  <code>msum</code> operates on lists
+of monadic values and folds the <code>mplus</code> operator into
+the list using the <code>mzero</code> element as the initial value: 
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+msum :: MonadPlus m => [m a] -> m a
+msum xs = foldr mplus mzero xs
+</pre></td></tr></table>
+</p>
+
+<p>
+In the List monad, <code>msum</code> is equivalent to <code>concat</code>.
+In the <code>Maybe</code> monad, <code>msum</code> returns the first
+non-<code>Nothing</code> value from a list.  Likewise, the behavior in
+other monads will depend on the exact nature of their <code>mzero</code>
+and <code>mplus</code> definitions.
+</p>
+
+<a name="example9"></a>
+<p>
+<code>msum</code> allows many recursive functions and folds to be
+expressed more concisely.  In the <code>Maybe</code> monad, for example,
+we can write:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example9.hs">example9.hs</a></th>
+</tr>
+<tr><td><pre>
+type Variable = String
+type Value = String
+type EnvironmentStack = [[(Variable,Value)]]
+
+-- lookupVar retrieves a variable's value from the environment stack
+-- It uses msum in the Maybe monad to return the first non-Nothing value.
+lookupVar :: Variable -> EnvironmentStack -> Maybe Value
+lookupVar var stack = msum $ map (lookup var) stack
+</pre></td></tr></table>
+instead of:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+lookupVar :: Variable -> EnvironmentStack -> Maybe Value
+lookupVar var []     = Nothing
+lookupVar var (e:es) = let val = lookup var e
+                       in maybe (lookupVar var es) Just val
+</pre></td></tr></table>
+</p>
+
+<p>
+The second function for use with monads with a zero and a plus is
+the <code>guard</code> function:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+guard :: MonadPlus m => Bool -> m ()
+guard p = if p then return () else mzero
+</pre></td></tr></table>
+The trick to understanding this function is to recall the law for
+monads with zero and plus that states <code>mzero&nbsp;>>=&nbsp;f&nbsp;==&nbsp;mzero</code>.
+So, placing a <code>guard</code> function in a sequence of monadic
+operations will force any execution in which the guard is <code>False</code>
+to be <code>mzero</code>.  This is similar to the way that guard predicates
+in a list comprehension cause values that fail the predicate to become
+<code>[]</code>.
+</p>
+
+<a name="example10"></a>
+<p>
+Here is an example demonstrating the use of the <code>guard</code> function
+in the <code>Maybe</code> monad.
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example10.hs">example10.hs</a></th>
+</tr>
+<tr><td><pre>
+data Record = Rec {name::String, age::Int} deriving Show
+type DB = [Record]
+
+-- getYoungerThan returns all records for people younger than a specified age.
+-- It uses the guard function to eliminate records for ages at or over the limit.
+-- This is just for demonstration purposes.  In real life, it would be
+-- clearer to simply use filter.  When the filter criteria are more complex,
+-- guard becomes more useful.
+getYoungerThan :: Int -> DB -> [Record]
+getYoungerThan limit db = mapMaybe (\r -> do { guard (age r < limit); return r }) db
+</pre></td></tr></table>
+</p>
+
+<a name="summary"><h2>Summary</h2></a>
+
+<p>
+Haskell provides a number of functions which are useful for working with monads
+in the standard libraries.  The <code>Monad</code> class and most common
+monad functions are in the standard prelude.  The <code>MonadPlus</code> class
+and less commonly-used (but still very useful!) functions are defined
+in the <code>Monad</code> module.  Many other types in the Haskell libraries
+are declared as instances of <code>Monad</code> and <code>MonadPlus</code>
+in their respective modules.  
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="exercises.html">Exercises</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="introII.html">Part II - Introduction</a></td>
+</tr>
+</table>	
+
+</body>		

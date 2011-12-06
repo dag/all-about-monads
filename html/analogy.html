@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>A physical analogy for monads</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="standardxformers.html">Standard monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="examples.html">Appendix II - Haskell code examples</a></td>
+</tr>
+</table>
+
+<h1>A physical analogy for monads</h1>
+
+<p>
+Because monads are such abstract entities, it is sometimes useful to
+think about a physical system that is analogous to a monad instead of
+thinking about monads directly.  In this way, we can use our physical
+intuition and experiences to gain insights that we can relate back to
+the abstract world of computational monads.
+</p>
+
+<p>
+The particular physical analogy developed here is that of a mechanized
+assembly line.  It is not a perfect fit for monads &mdash; especially with some
+of the higher-order aspects of monadic computation &mdash; but I believe it
+could be helpful to gain the initial understanding of how a monad works.
+</p>
+
+<p>
+Begin by thinking about a Haskell program as a conveyor belt.  Input goes on
+end of the conveyor belt and is carried to a succession of work areas.  At each
+work area, some operation is performed on the item on the conveyor belt and the
+result is carried by the conveyor belt to the next work area.  Finally, the conveyor
+belt carries the final product to the end of the assembly line to be output.
+</p>
+
+<p>
+In this assembly line model, our physical monad is a system of machines that
+controls how successive work areas on the assembly line combine their functionality
+to create the overall product.
+</p>
+
+<p>
+Our monad consists of three parts:
+<ol>
+<li>Trays that hold work products as they move along the conveyor belt.
+<li>Loader machines that can put any object into a tray.
+<li>Combiner machines that can take a tray with an object and produce a
+tray with a new object.  These combiner machines are attached to worker
+machines that actualy produce the new objects.
+</ol>
+</p>
+
+<p>We use the monad by setting up our assembly line as a loader machine which
+puts materials into trays at the beginning of the assembly line.  The conveyor
+belt then carries these trays to each work area, where a combiner machine takes
+the tray and may decide based on its contents whether to run them through a
+worker machine, as shown in Figure A-1.
+</p>
+
+<table width="478" border="1">
+<tr><td>
+<img src="figureA-1.png" width="478" height="200" border="0" hspace="0" vspace="0">
+</td></tr>
+<tr bgcolor="#cc9999"><td>
+Figure A-1.  An assembly line using a monad architecture.
+</td></tr>
+</table>
+
+<p>
+The important thing to notice about the monadic assembly line is that it
+separates out the work of combining the output of the worker machines from
+the actual work done by the worker machines.  Once they are separated, we
+can vary them independently.  So the same combiner machines could be used
+on an assembly line to make airplanes and an assembly line to make
+chopsticks.  Likewise, the same worker machines could be used with
+different combiners to alter the way the final product is produced.
+</p>
+
+<p>
+Lets take the example of an assembly line to make chopsticks, and see how
+it is handled in our physical analogy and how me might represent it as
+a program in Haskell.  We will have three worker machines.  The first
+takes small pieces of wood as input and outputs a tray containing a pair
+of roughly shaped chopsticks.  The second takes a pair of roughly shaped
+chopsticks and outputs a tray containing a pair of smooth, polished chopsticks
+with the name of the restaurant printed on them.  The third takes
+a pair of polished chopsticks and outputs a tray containing a finished pair
+of chopsticks in a printed paper wrapper.  We could represent this in
+Haskell as:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- the basic types we are dealing with
+type Wood = ...
+type Chopsticks = ...
+data Wrapper x = Wrapper x
+
+-- NOTE: the Tray type comes from the Tray monad
+
+-- worker function 1: makes roughly shaped chopsticks
+makeChopsticks :: Wood -> Tray Chopsticks
+makeChopsticks w = ...
+
+-- worker function 2: polishes chopsticks
+polishChopsticks :: Chopsticks -> Tray Chopsticks
+polishChopsticks c = ...
+
+-- worker function 3: wraps chopsticks
+wrapChopsticks :: Chopsticks -> Tray Wrapper Chopsticks
+wrapChopsticks c = ...
+</pre></td></tr></table>
+</p>
+
+<p>
+It is clear that the worker machines contain all of the functionality needed
+to produce chopsticks.  What is missing is the specification of the trays,
+loader, and combiner machines that collectively make up the Tray monad.
+Our trays should either be empty or contain a single item.  Our loader
+machine would simply take an item and place it in a tray on the conveyor
+belt.  The combiner machine would take each input tray and pass along empty trays
+while feeding the contents of non-empty trays to its worker machine.
+In Haskell, we would define the <code>Tray</code> monad as:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- trays are either empty or contain a single item 
+data Tray x = Empty | Contains x
+
+-- Tray is a monad
+instance Monad Tray where
+    Empty        >>= _      = Empty
+    (Contains x) >>= worker = worker x
+    return                  = Contains
+    fail _                  = Empty    
+</pre></td></tr></table>
+</p>
+
+<p>
+<img src="info.png" align="left"></img>
+You may recognize the <code>Tray</code> monad as a disguised version of the
+<code>Maybe</code> monad that is a standard part of Haskell 98 library.
+<br clear="all"></p>
+
+<p>
+All that remains is to sequence the worker machines
+together using the loader and combiner machines to make a complete assembly
+line, as shown in Figure A-2.
+</p>
+
+<table width="478" border="1">
+<tr><td>
+<img src="figureA-2.png" width="478" height="200" border="0" hspace="0" vspace="0">
+</td></tr>
+<tr bgcolor="#cc9999"><td>
+Figure A-2.  A complete assembly line for making chopsticks using a monadic approach.
+</td></tr>
+</table>
+
+<p>
+In Haskell, the sequencing can be done using the standard monadic functions:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+assemblyLine :: Wood -> Tray Wrapped Chopsticks
+assemblyLine w = (return w) >>= makeChopsticks >>= polishChopsticks >>= wrapChopsticks
+</pre></td></tr></table>
+or using the built in Haskell "do" notation for monads: 
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+assemblyLine :: Wood -> Tray Wrapped Chopsticks
+assemblyLine w = do c   <- makeChopsticks w
+                    c'  <- polishChopsticks c
+                    c'' <- wrapChopsticks c'
+                    return c''
+</pre></td></tr></table>
+</p>
+
+<p>
+So far, you have seen how monads are like a framework for building assembly lines,
+but you probably haven't been overawed by their utility.  To see why we might want
+to build our assembly line using the monadic approach, consider what would happen
+if we wanted to change the manufacturing process.
+</p>
+
+<p>
+Right now, when a worker machine malfunctions, it uses the <code>fail</code>
+routine to produce an empty tray.  The <code>fail</code> routine takes an argument
+describing the failure, but our <code>Tray</code> type ignores this and simply
+produces an empty tray.  This empty tray travels down the assembly
+line and the combiner machines allow it to bypass the remaining worker machines.
+It eventually reaches the end of the assembly line, where it is brought to
+you, the quality control engineer.  It is your job to figure out which machine
+failed, but all you have to go on is an empty tray.   
+</p>
+
+<p>
+You realize that your job would be much easier if you took advantage of the
+failure messages that are currently ignored by the <code>fail</code> routine
+in your <code>Tray</code> monad.  Because your assembly line is organized around
+a monadic approach, it is easy for you to add this functionality to your assembly
+line without changing your worker machines.
+</p>
+
+<p>
+To make the change, you simply create a new tray type that can never be empty.
+It will always either contain an item or it will contain a failure report
+describing the exact reason there is no item in the tray.  
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- tray2s either contain a single item or contain a failure report 
+data Tray2 x = Contains x | Failed String
+
+-- Tray2 is a monad
+instance Monad Tray2 where
+    (Failed reason) >>= _      = Failed reason
+    (Contains x)    >>= worker = worker x
+    return                     = Contains
+    fail reason                = Failed reason
+</pre></td></tr></table>
+</p>
+
+<p>
+<img src="info.png" align="left"></img>
+You may recognize the <code>Tray2</code> monad as a disguised version of
+the <code>Error</code> monad that is a standard part of the Haskell 98
+libraries.<br clear="all">
+</p>
+
+<p>
+Replacing the <code>Tray</code> monad with the <code>Tray2</code> monad
+instantly upgrades your assembly line.  Now when a failure occurs, the
+tray that is brought to the quality control engineer contains a failure
+report detailing the exact cause of the failure! 
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="standardxformers.html">Standard monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="examples.html">Appendix II - Haskell code examples</a></td>
+</tr>
+</table>
+	
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Doing it with class</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="meet.html">Meet the Monads</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="laws.html">The monad laws</a></td>
+</tr>
+</table>	
+
+<h1>Doing it with class</h1>
+<ul>
+<li><a href="#classes">Haskell type classes</a></li>
+<li><a href="#monad">The Monad class</a></li>
+<li><a href="#example2">Example continued</a></li>
+<li><a href="#donotation">Do notation</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<a name="classes"><h2>Haskell type classes</h2></a>
+
+<p>
+The discussion in this chapter involves the Haskell type class system.
+If you are not familiar with type classes in Haskell, you should
+<a href="http://www.haskell.org/tutorial/classes.html">review them</a>
+before continuing.
+</p>
+
+<a name="monad"><h2>The Monad class </h2></a>
+
+<p>
+In Haskell, there is a standard <code>Monad</code> class that defines the names
+and signatures of the two monad functions <code>return</code> and
+<code>>>=</code>.  It is not strictly necessary to make your monads
+instances of the <code>Monad</code> class, but it is a good idea.  Haskell has
+special support for <code>Monad</code> instances built into the language and
+making your monads instances of the <code>Monad</code> class will allow
+you to use these features to write cleaner and more elegant code.  Also,
+making your monads instances of the <code>Monad</code> class communicates
+important information to others who read the code and failing to do so can
+cause you to use confusing and non-standard function names.  It's easy to do
+and it has many benefits, so just do it!
+</p>
+
+<p>The standard <code>Monad</code> class definition in Haskell looks
+something like this:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+class Monad m where
+    (>>=)  :: m a -> (a -> m b) -> m b
+    return :: a -> m a
+</pre></td></tr></table>
+</p>
+
+<a name="example2"><h2>Example continued</h2></a>
+
+<p>
+Continuing the <a href="meet.html#example1">previous example</a>, we will
+now see how the <code>Maybe</code> type constructor fits into the Haskell monad
+framework as an instance of the <code>Monad</code> class.
+</p>
+
+<p>
+Recall that our <code>Maybe</code> monad used the <code>Just</code>
+data constructor to fill the role of the monad <code>return</code> function
+and we built a simple combinator to fill the role of the monad <code>>>=</code>
+binding function.  We can make its role as a monad explicit
+by declaring <code>Maybe</code> as an instance of the <code>Monad</code> class:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+instance Monad Maybe where
+    Nothing  >>= f = Nothing
+    (Just x) >>= f = f x
+    return         = Just
+</pre></td></tr></table>
+</p>
+
+<p>
+Once we have defined <code>Maybe</code> as an instance of the
+</code>Monad</code> class, we can use the standard monad operators to
+build the complex computations:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+-- we can use monadic operations to build complicated sequences
+maternalGrandfather :: Sheep -> Maybe Sheep
+maternalGrandfather s = (return s) >>= mother >>= father
+
+fathersMaternalGrandmother :: Sheep -> Maybe Sheep
+fathersMaternalGrandmother s = (return s) >>= father >>= mother >>= mother 
+</pre></td></tr></table>
+</p>
+
+<p>
+In Haskell, <code>Maybe</code> is defined as an instance of the <code>Monad</code>
+class in the standard prelude, so you don't need to do it yourself.
+The other monad we have seen so far, the list constructor, is also defined as an
+instance of the <code>Monad</code> class in the standard prelude.
+</p>
+
+<p>
+<img src="info.png" align="left"></img>
+When writing functions that work with monads, try to make use of the
+<code>Monad</code> class instead of using a specific monad instance.
+A function of the type
+<pre>doSomething :: (Monad m) => a -> m b</pre>
+is much more flexible than one of the type
+<pre>doSomething :: a -> Maybe b</pre>
+The former function can be used with many types of monads to get
+different behavior depending on the strategy embodied in the monad,
+whereas the latter function is restricted to the strategy of the
+<code>Maybe</code> monad.
+</p>
+
+<a name="donotation"><h2>Do notation</h2></a>
+
+<p>
+Using the standard monadic function names is good, but another advantage
+of membership in the <code>Monad</code> class is the Haskell support for
+"do" notation.  Do notation is an expressive shorthand for building up
+monadic computations, similar to the way that list comprehensions are an
+expressive shorthand for building computations on lists.  Any instance of
+the <code>Monad</code> class can be used in a do-block in Haskell.
+</p>
+
+<p>
+In short, the do notation allows you to write monadic computations using
+a pseudo-imperative style with named variables.  The result of a
+monadic computation can be "assigned" to a variable using a left
+arrow <code>&lt;-</code> operator.  Then using that variable in a
+subsequent monadic computation automatically performs
+the binding.  The type of the expression to the right of the arrow is
+a monadic type <code>m a</code>.  The expression to the left of the arrow
+is a pattern to be matched against the value <em>inside</em> the monad.
+<code>(x:xs)</code> would match against <code>Maybe [1,2,3]</code>, for example.
+</p>
+
+<p>
+Here is a sample of do notation using the <code>Maybe</code> monad:
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example2.hs">example2.hs</a></th>
+</tr>
+<tr><td><pre>
+-- we can also use do-notation to build complicated sequences
+mothersPaternalGrandfather :: Sheep -> Maybe Sheep
+mothersPaternalGrandfather s = do m  <- mother s
+                                  gf <- father m
+                                  father gf
+</pre></td></tr></table>
+Compare this to <code>fathersMaternalGrandmother</code> written above without
+using do notation.
+</p>
+
+<p>
+The do block shown above is written using the layout rule to define the extent of
+the block.  Haskell also allows you to use braces and semicolons when defining
+a do block: 
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+mothersPaternalGrandfather s = do { m <- mother s; gf <- father m; father gf }
+</pre></td></tr></table>
+</p>
+
+<p>
+Notice that do notation resembles an imperative programming language,
+in which a computation is built up from an explicit sequence of
+simpler computations.  In this respect, monads offer the possibility to
+create imperative-style computations within a larger functional program.
+This theme will be expanded upon when we deal with side-effects and
+the I/O monad later.
+</p>
+
+<p>
+Do notation is simply syntactic sugar.  There is nothing that can be done using
+do notation that cannot be done using only the standard monadic operators.
+But do notation is cleaner and more convenient in some cases, especially when
+the sequence of monadic computations is long.  You should understand both the
+standard monadic binding notation and do notation and be able to apply each
+where they are appropriate.
+</p>
+
+<p>
+The actual translation from do notation to standard monadic operators is roughly
+that every expression matched to a pattern, <code>x <- expr1</code>, becomes
+<pre>expr1 >>= \x -></pre> and every expression without a variable assignment,
+<code>expr2</code> becomes <pre>expr2 >>= \_ -></pre>  All do blocks must
+end with a monadic expression, and a let clause is allowed at the beginning of a
+do block (but let clauses in do blocks do not use the "in" keyword).
+The definition of <code>mothersPaternalGrandfather</code> above would be
+translated to:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+mothersPaternalGrandfather s = mother s >>= \m ->
+                               father m >>= \gf ->
+                               father gf
+</pre></td></tr></table>
+It now becomes clear why the binding operator is so named.  It is
+literally used to bind the value in the monad to the argument in the
+following lambda expression.
+</p>
+
+<a name="summary"><h2>Summary</h2></a>
+
+<p>
+Haskell provides built-in support for monads.  To take advantage of Haskell's
+monad support, you must declare the monad type constructor to be an instance
+of the <code>Monad</code> class and supply definitions of the <code>return</code> and
+<code>>>=</code> (pronounced "bind") functions for the monad. 
+</p>
+
+<p>
+A monad that is an instance of the <code>Monad</code> class can be used
+with do-notation, which is syntactic sugar that provides a simple,
+imperative-style notation for describing computations with monads.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="meet.html">Meet the Monads</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="laws.html">The monad laws</a></td>
+</tr>
+</table>	
+
+</body>
+</html>

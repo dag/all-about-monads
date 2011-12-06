@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Solution to exercise 1</title>
+</head>
+<body>
+
+<h1>Solution to <a href="exercises.html#exercise1">Exercise 1</a></h1>
+
+<p>
+A literal translation from do-notation would be:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+maternalGrandfather s = mother s >>= \m ->
+                        father m
+</pre></td></tr></table>
+
+<p>
+but since the bound variable is used immediately in this function,
+the equivalent definition is more succinct:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise1.hs">exercise1.hs</a></th>
+</tr>
+<tr><td><pre>
+maternalGrandfather :: Sheep -> Maybe Sheep
+maternalGrandfather s = mother s >>= father
+</pre></td></tr></table>
+
+<p>
+The other two functions are defined similarly:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise1.hs">exercise1.hs</a></th>
+</tr>
+<tr><td><pre>
+fathersMaternalGrandmother :: Sheep -> Maybe Sheep
+fathersMaternalGrandmother s = father s >>= mother >>= mother
+
+mothersPaternalGrandfather :: Sheep -> Maybe Sheep
+mothersPaternalGrandfather s = mother s >>= father >>= father
+</pre></td></tr></table>
+
+<p>
+<a href="exercises.html">Return to exercises.</a>
+</p>
+
+</body>
+</html>		

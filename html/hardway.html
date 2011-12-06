@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Combining monads the hard way</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="introIII.html">Part III - Introduction</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="transformers.html">Monad transformers</a></td>
+</tr>
+</table>	
+
+<h1>Combining monads the hard way</h1>
+
+<ul>
+  <li><a href="#nested">Nested Monads</a></li>
+  <li><a href="#combined">Combined Monads</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+Before we investigate the use of monad transformers, we will see how monads
+can be combined without using transformers.  This is a useful excercise to
+develop insights into the issues that arise when combining monads and
+provides a baseline from which the advantages of the transformer approach
+can be measured.  We use the code from
+<a href="contmonad.html#example">example 18</a> (the Continuation monad) to
+illustrate these issues, so you may want to review it before continuing.
+</p>
+
+<a name="nested"><h2>Nested Monads</h2></a>
+
+<p>
+Some computations have a simple enough structure that the monadic computations
+can be nested, avoiding the need for a combined monad altogether.
+In Haskell, all computations occur in the IO monad at the top level, so
+the monad examples we have seen so far all actually use the technique of
+nested monadic computations.  To do this, the computations 
+perform all of their input at the beginning &mdash; usually by reading
+arguments from the command line &mdash; then pass the values
+on to the monadic computations to produce results, and finally perform their
+output at the end.  This structure avoids the issues of combining monads but
+makes the examples seem contrived at times.
+</p>
+
+<p>
+The code introduced in example 18 followed the
+nesting pattern: reading a number from the command line in the IO monad,
+passing that number to a computation in the Continuation monad to produce
+a string, and then writing the string back in the IO monad.  The computations
+in the IO monad aren't restricted to reading from the command line and
+writing strings; they can be arbitrarily complex.  Likewise, the
+inner computation can be arbitrarily complex as well.  As long as the
+inner computation does not depend on the functionality of the outer monad,
+it can be safely nested within the
+outer monad, as illustrated in this variation on example 18 which reads
+the value from stdin instead of using a command line argument:
+</p>
+
+<a name="example1"></a>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example19.hs">example19.hs</a></th>
+</tr>
+<tr><td><pre>
+fun :: IO String
+fun = do n <- (readLn::IO Int)         -- this is an IO monad block
+         return $ (`runCont` id) $ do  -- this is a Cont monad block
+           str <- callCC $ \exit1 -> do
+             when (n < 10) (exit1 (show n))
+             let ns = map digitToInt (show (n `div` 2))
+             n' <- callCC $ \exit2 -> do
+               when ((length ns) < 3) (exit2 (length ns))
+               when ((length ns) < 5) (exit2 n)
+               when ((length ns) < 7) $ do let ns' = map intToDigit (reverse ns)
+                                           exit1 (dropWhile (=='0') ns')
+               return $ sum ns
+             return $ "(ns = " ++ (show ns) ++ ") " ++ (show n')
+           return $ "Answer: " ++ str
+</pre></td></tr></table>
+
+<a name="combined"><h2>Combined Monads</h2></a>
+
+<p>
+What about computations with more complicated structure?  If the nesting
+pattern cannot be used, we need a way to combine the attributes of two
+or more monads in a single computation.  This is accomplished by doing
+computations within a monad in which the values are themselves monadic
+values in another monad.  For example, we might perform computations
+in the Continuation monad of type <code>Cont (IO String) a</code>
+if we need to perform I/O within the computation in the Continuation monad.
+We could use a monad of type <code>State (Either Err a) a</code> to
+combine the features of the State and Error monads in a single computation. 
+</p>
+
+<a name="example2"></a>
+
+<p>
+Consider a slight modification to our example in which we perform the
+same I/O at the beginning, but we may require additional input in the
+middle of the computation in the Continuation monad.  In this case, we
+will allow the user to specify part of the output value when the input
+value is within a certain range.  Because the I/O depends on part of
+the computation in the Continuation monad and part of the computation
+in the Continuation monad depends on the result of the I/O, we
+cannot use the nested monad pattern.
+</p>
+
+<p>
+Instead, we make the computation
+in the Continuation monad use values from the IO monad.  What used to
+be <code>Int</code> and <code>String</code> values are now of type
+<code>IO Int</code> and <code>IO String</code>.  We can't extract values
+from the IO monad &mdash; it's a one-way monad &mdash; so we may need
+to nest little do-blocks of the IO monad within the Continuation monad
+to manipulate the values.  We use a helper function <code>toIO</code>
+to make it clearer when we are creating values in the IO monad nested
+within the Continuation monad.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example20.hs">example20.hs</a></th>
+</tr>
+<tr><td><pre>
+toIO :: a -> IO a
+toIO x = return x
+
+fun :: IO String
+fun = do n <- (readLn::IO Int)         -- this is an IO monad block
+         convert n
+	 
+convert :: Int -> IO String
+convert n = (`runCont` id) $ do        -- this is a Cont monad block
+              str <- callCC $ \exit1 -> do    -- str has type IO String
+                when (n < 10) (exit1 $ toIO (show n))
+                let ns = map digitToInt (show (n `div` 2))
+                n' <- callCC $ \exit2 -> do   -- n' has type IO Int
+                  when ((length ns) < 3) (exit2 (toIO (length ns)))
+                  when ((length ns) < 5) (exit2 $ do putStrLn "Enter a number:"
+                                                     x <- (readLn::IO Int)
+                                                     return x)
+                  when ((length ns) < 7) $ do let ns' = map intToDigit (reverse ns)
+                                              exit1 $ toIO (dropWhile (=='0') ns')
+                  return (toIO (sum ns))
+                return $ do num <- n'  -- this is an IO monad block
+                            return $ "(ns = " ++ (show ns) ++ ") " ++ (show num)
+              return $ do s <- str -- this is an IO monad block
+                          return $ "Answer: " ++ s
+</pre></td></tr></table>
+
+<p>
+Even this trivial example has gotten confusing and ugly when we tried to
+combine different monads in the same computation.  It works, but it isn't pretty.
+Comparing the code side-by-side shows the degree to which the manual monad
+combination strategy pollutes the code. 
+</p>
+
+<a name="comparison"></a>
+
+<table bgcolor="#bbaa55" width="100%" border="1">
+<tr bgcolor="#aabb55">
+<th align="center">Nested monads from example 19</th>
+<th align="center">Manually combined monads from example 20</th>
+</tr>
+<tr><td><font size="-1"><pre>
+fun = do n <- (readLn::IO Int)
+         return $ (`runCont` id) $ do
+           str <- callCC $ \exit1 -> do
+             when (n < 10) (exit1 (show n))
+             let ns = map digitToInt (show (n `div` 2))
+             n' <- callCC $ \exit2 -> do
+               when ((length ns) < 3) (exit2 (length ns))
+               when ((length ns) < 5) (exit2 <font color="green"><b>n</b></font>)
+               when ((length ns) < 7) $ do
+                 let ns' = map intToDigit (reverse ns)
+                 exit1 (dropWhile (=='0') ns')
+               return $ sum ns
+             return $ "(ns = " ++ (show ns) ++ ") " ++ (show n')
+           return $ "Answer: " ++ str
+</pre></font></td>
+<td><font size="-1"><pre>
+convert n = (`runCont` id) $ do
+              str <- callCC $ \exit1 -> do
+                when (n < 10) (exit1 $ <font color="red"><b>toIO</b></font> (show n))
+                let ns = map digitToInt (show (n `div` 2))
+                n' <- callCC $ \exit2 -> do
+                  when ((length ns) < 3) (exit2 (<font color="red"><b>toIO</b></font> (length ns)))
+                  when ((length ns) < 5) (exit2 $ <font color="red"><b>do
+                    putStrLn "Enter a number:"
+                    x <- (readLn::IO Int)
+                    return x</b></font>)
+                  when ((length ns) < 7) $ do
+                    let ns' = map intToDigit (reverse ns)
+                    exit1 $ <font color="red"><b>toIO</b></font> (dropWhile (=='0') ns')
+                  return (<font color="red"><b>toIO</b></font> (sum ns))
+                return $ <font color="red"><b>do num <- n'
+                            return $</b></font> "(ns = " ++ (show ns) ++ ") " ++ (show num)
+              return $ <font color="red"><b>do s <- str
+                          return $</b></font> "Answer: " ++ s
+</font></pre></td></tr></table>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="introIII.html">Part III - Introduction</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="transformers.html">Monad transformers</a></td>
+</tr>
+</table>	
+
+</body>

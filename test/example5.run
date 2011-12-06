@@ -1,0 +1,10 @@
+#!/bin/sh
+
+rm -rf ex5.tmp.*
+echo "file" > ex5.tmp.1
+mkdir ex5.tmp.2
+echo "file" > ex5.tmp.3
+echo "file" > ex5.tmp.4
+mkdir ex5.tmp.5
+$1 ex5.tmp.*
+rm -rf ex5.tmp.*

@@ -1,0 +1,17 @@
+[
+Packet {from = Host 23, to = Host 7, payload = Data "web request"},
+Packet {from = Host 7, to = Host 7, payload = Data "exploit"},
+Packet {from = Host 73, to = Host 28, payload = Data "misrouted"},
+Packet {from = Host 73, to = Host 28, payload = Data "misrouted"},
+Packet {from = Host 16, to = Host 7, payload = Data "ftp request"},
+Packet {from = Host 99, to = Host 7, payload = Data "exploit"},
+Packet {from = Host 19, to = Host 7, payload = Data "ssh login"},
+Packet {from = Host 67, to = Host 7, payload = Data "network scan"},
+Packet {from = Host 67, to = Host 7, payload = Data "network scan"},
+Packet {from = Host 67, to = Host 7, payload = Data "network scan"},
+Packet {from = Host 67, to = Host 7, payload = Data "network scan"},
+Packet {from = Host 21, to = Host 7, payload = Data "ftp request"},
+Packet {from = Host 17, to = Host 7, payload = Data "ssh login"},
+Packet {from = Host 42, to = Host 7, payload = Data "web request"},
+Packet {from = Host 42, to = Host 7, payload = Data "web request"}
+]

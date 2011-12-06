@@ -1,0 +1,2 @@
+Test that we can use the [inclusion] mechanism:
+$<template2.txt>

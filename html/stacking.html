@@ -1,0 +1,339 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Managing the transformer stack</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="xformerexamples.html">More examples with monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="beyond.html">Continuing Exploration</a></td>
+</tr>
+</table>	
+
+<h1>Managing the transformer stack</h1>
+
+<ul>
+  <li><a href="#order">Selecting the correct order</a></li>
+  <li><a href="#example">An example with multiple transformers</a></li>
+  <li><a href="#lifting">Heavy lifting</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+As the number of monads combined together increases, it becomes increasingly
+important to manage the stack of monad transformers well.
+</p>
+
+<a name="order"><h2>Selecting the correct order</h2></a>
+
+<p>
+Once you have decided on the monad features you need, you must choose
+the correct order in which to apply the monad transformers to achieve
+the results you want.  For instance you may know that you want a
+combined monad that is an instance of <code>MonadError</code> and
+<code>MonadState</code>, but should you apply <code>StateT</code> to
+the <code>Error</code> monad or <code>ErrorT</code> to the <code>State</code>
+monad?
+</p>
+
+<p>
+The decision depends on the exact semantics you want for your
+combined monad.  Applying <code>StateT</code> to the <code>Error</code>
+monad gives a state transformer function of type
+<code>s&nbsp;->&nbsp;Error&nbsp;e&nbsp;(a,s)</code>.  Applying
+<code>ErrorT</code> to the <code>State</code> monad gives a state transformer
+function of type <code>s&nbsp;->&nbsp;(Error&nbsp;e&nbsp;a,s)</code>.
+Which order to choose depends on the role of errors in your computation.
+If an error means no state could be produced, you would apply <code>StateT</code>
+to <code>Error</code>.  If an error means no value could be produced, but the
+state remains valid, then you would apply <code>ErrorT</code> to <code>State</code>.
+</p>
+
+<p>
+Choosing the correct order requires understanding the transformation carried
+out by each monad transformer, and how that transformation affects the
+semantics of the combined monad.
+</p>
+
+<a name="example"><h2>An example with multiple transformers</h2></a>
+
+<p>
+The following example demonstrates the use of multiple monad transformers.
+The code uses the </code>StateT</code> monad transformer along with the List monad to
+produce a combined monad for doing stateful nondeterministic computations.
+In this case, however, we have added the <code>WriterT</code> monad transformer
+to perform logging during the computation.  The problem we will apply this monad
+to is the famous N-queens problem: to place N queens on a chess board so that
+no queen can attack another.
+</p>
+
+<p>
+The first decision is in what order to apply the monad transformers.
+<code>StateT&nbsp;s&nbsp;(WriterT&nbsp;w&nbsp;[])</code> yields a type
+like: <code>s&nbsp;->&nbsp;[((a,s),w)]</code>.
+<code>WriterT&nbsp;w&nbsp;(StateT&nbsp;s&nbsp;[])</code> yields a type
+like: <code>s&nbsp;->&nbsp;[((a,w),s)]</code>.  In this case, there is
+little difference between the two orders, so we will choose the second
+arbitrarily.
+</p>
+
+<p>
+Our combined monad is an instance of both <code>MonadState</code> and
+<code>MonadWriter</code>, so we can freely mix use of <code>get</code>,
+<code>put</code>, and <code>tell</code> in our monadic computations.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example25.hs">example25.hs</a></th>
+</tr>
+<tr><td><pre>
+-- this is the type of our problem description
+data NQueensProblem = NQP {board::Board,
+                           ranks::[Rank],   files::[File],
+                           asc::[Diagonal], desc::[Diagonal]}
+
+-- initial state = empty board, all ranks, files, and diagonals free
+initialState = let fileA = map (\r->Pos A r) [1..8]
+                   rank8 = map (\f->Pos f 8) [A .. H]
+                   rank1 = map (\f->Pos f 1) [A .. H]
+                   asc   = map Ascending (nub (fileA ++ rank1))
+                   desc  = map Descending (nub (fileA ++ rank8))
+               in NQP (Board []) [1..8] [A .. H] asc desc
+
+-- this is our combined monad type for this problem
+type NDS a = WriterT [String] (StateT NQueensProblem []) a
+
+-- Get the first solution to the problem, by evaluating the solver computation with
+-- an initial problem state and then returning the first solution in the result list,
+-- or Nothing if there was no solution.
+getSolution :: NDS a -> NQueensProblem -> Maybe (a,[String])
+getSolution c i = listToMaybe (evalStateT (runWriterT c) i)
+
+-- add a Queen to the board in a specific position
+addQueen :: Position -> NDS ()
+addQueen p = do (Board b) <- gets board
+                rs <- gets ranks
+                fs <- gets files
+                as <- gets asc
+                ds <- gets desc
+                let b'  = (Piece Black Queen, p):b
+                    rs' = delete (rank p) rs
+                    fs' = delete (file p) fs
+                    (a,d) = getDiags p
+                    as' = delete a as
+                    ds' = delete d ds
+                tell ["Added Queen at " ++ (show p)]
+                put (NQP (Board b') rs' fs' as' ds')
+
+-- test if a position is in the set of allowed diagonals
+inDiags :: Position -> NDS Bool
+inDiags p = do let (a,d) = getDiags p
+               as <- gets asc
+               ds <- gets desc
+               return $ (elem a as) &amp;&amp; (elem d ds)
+	       
+-- add a Queen to the board in all allowed positions
+addQueens :: NDS ()
+addQueens = do rs <- gets ranks
+               fs <- gets files
+               allowed <- filterM inDiags [Pos f r | f <- fs, r <- rs]
+               tell [show (length allowed) ++ " possible choices"]
+               msum (map addQueen allowed)
+
+-- Start with an empty chess board and add the requested number of queens,
+-- then get the board and print the solution along with the log
+main :: IO ()
+main = do args <- getArgs
+          let n    = read (args!!0)
+              cmds = replicate n addQueens
+              sol  = (`getSolution` initialState) $ do sequence_ cmds
+                                                       gets board
+          case sol of
+            Just (b,l) -> do putStr $ show b    -- show the solution
+                             putStr $ unlines l -- show the log
+            Nothing    -> putStrLn "No solution"
+</pre></td></tr></table>
+
+<p>
+The program operates in a similar manner to the previous example, which solved
+the kalotan puzzle.  In this example, however, we do not test for consistency
+using the <code>guard</code> function.  Instead, we only create branches
+that correspond to allowed queen positions.  We use the added logging facility
+to log the number of possible choices at each step and the position in which
+the queen was placed.
+</p>
+
+<a name="lifting"><h2>Heavy lifting</h2></a>
+
+<p>
+There is one subtle problem remaining with our use of multiple monad transformers.
+Did you notice that all of the computations in the previous example are done
+in the combined monad, even if they only used features of one monad?  The code
+for these functions in tied unneccessarily to the definition of the combined
+monad, which decreases their reusability.
+</p>
+
+<p>
+This is where the <code>lift</code> function from the <code>MonadTrans</code> class
+comes into its own.  The <code>lift</code> function gives us the ability to write
+our code in a clear, modular, reusable manner and then lift the computations
+into the combined monad as needed.
+</p>
+
+<p>
+Instead of writing brittle code like:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+logString :: String -> StateT MyState (WriterT [String] []) Int
+logString s = ...
+</pre></td></tr></table>
+we can write clearer, more flexible code like:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+logString :: (MonadWriter [String] m) => String -> m Int
+logString s = ...
+</pre></td></tr></table>
+and then lift the <code>logString</code> computation into the combined monad
+when we use it.
+</p>
+
+<p><img src="info.png" align="left">
+You may need to use the compiler flags <code>-fglasgow-exts</code> with GHC or
+the equivalent flags with your Haskell compiler to use this technique.  The issue
+is that <code>m</code> in the constraint above is a type constructor, not a type,
+and this is not supported in standard Haskell 98.
+<br clear="all"></p>
+
+<p>
+When using lifting with complex transformer stacks, you may find yourself
+composing multiple lifts, like
+<code>lift&nbsp;.&nbsp;lift&nbsp;.&nbsp;lift&nbsp;$&nbsp;f&nbsp;x</code>.
+This can become hard to follow, and if the transformer stack changes
+(perhaps you add <code>ErrorT</code> into the mix) the lifting may need
+to be changed all over the code.  A good practice to prevent this is
+to declare helper functions with informative names to do the lifting:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+liftListToState = lift . lift . lift
+</pre></td></tr></table>
+Then, the code is more informative and if the transformer stack changes,
+the impact on the lifting code is confined to a small number of these
+helper functions. 
+</p>
+
+<p>
+The hardest part about lifting is understanding the semantics of lifting
+computations, since this depends on the details of the inner monad and the
+transformers in the stack.  As a final task, try to understand the different
+roles that lifting plays in the following example code.  Can you predict
+what the output of the program will be?
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example26.hs">example26.hs</a></th>
+</tr>
+<tr><td><pre>
+-- this is our combined monad type for this problem
+type NDS a = StateT Int (WriterT [String] []) a
+
+{- Here is a computation on lists -}
+
+-- return the digits of a number as a list
+getDigits :: Int -> [Int]
+getDigits n = let s = (show n)
+              in map digitToInt s
+
+{- Here are some computations in MonadWriter -}
+
+-- write a value to a log and return that value
+logVal :: (MonadWriter [String] m) => Int -> m Int
+logVal n = do tell ["logVal: " ++ (show n)]
+              return n
+
+-- do a logging computation and return the length of the log it wrote
+getLogLength :: (MonadWriter [[a]] m) => m b -> m Int
+getLogLength c = do (_,l) <- listen $ c
+                    return (length (concat l))
+
+-- log a string value and return 0
+logString :: (MonadWriter [String] m) => String -> m Int
+logString s = do tell ["logString: " ++ s]
+                 return 0
+
+{- Here is a computation that requires a WriterT [String] [] -}
+
+-- "Fork" the computation and log each list item in a different branch.
+logEach :: (Show a) => [a] -> WriterT [String] [] a
+logEach xs = do x <- lift xs
+                tell ["logEach: " ++ (show x)]
+                return x
+		
+{- Here is a computation in MonadState -}
+
+-- increment the state by a specified value
+addVal :: (MonadState Int m) => Int -> m ()
+addVal n = do x <- get
+              put (x+n)
+
+{- Here are some computations in the combined monad -}
+
+-- set the state to a given value, and log that value
+setVal :: Int -> NDS ()
+setVal n = do x <- lift $ logVal n
+              put x
+
+-- "Fork" the computation, adding a different digit to the state in each branch.
+-- Because setVal is used, the new values are logged as well.
+addDigits :: Int -> NDS ()
+addDigits n = do x  <- get
+                 y <- lift . lift $ getDigits n
+                 setVal (x+y)
+
+{- an equivalent construction is:
+addDigits :: Int -> NDS ()
+addDigits n = do x <- get
+                 msum (map (\i->setVal (x+i)) (getDigits n))
+-}
+
+{- This is an example of a helper function that can be used to put all of the lifting logic
+   in one location and provide more informative names.  This has the advantage that if the
+   transformer stack changes in the future (say, to add ErrorT) the changes to the existing
+   lifting logic are confined to a small number of functions.
+-}
+liftListToNDS :: [a] -> NDS a
+liftListToNDS = lift . lift
+
+-- perform a series of computations in the combined monad, lifting computations from other
+-- monads as necessary.
+main :: IO ()
+main = do mapM_ print $ runWriterT $ (`evalStateT` 0) $ do x <- lift $ getLogLength $ logString "hello"
+                                                           addDigits x
+                                                           x <- lift $ logEach [1,3,5]
+                                                           lift $ logVal x
+                                                           liftListToNDS $ getDigits 287
+
+</pre></td></tr></table>
+
+<p>
+Once you fully understand how the various lifts in the example work and how lifting
+promotes code reuse, you are ready for real-world monadic programming.  All that
+is left to do is to hone your skills writing real software.  Happy hacking!
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="xformerexamples.html">More examples with monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="beyond.html">Continuing Exploration</a></td>
+</tr>
+</table>	
+
+</body>

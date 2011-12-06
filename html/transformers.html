@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Monad transformers</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="hardway.html">Combining monads the hard way</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="standardxformers.html">Standard monad transformers</a></td>
+</tr>
+</table>	
+
+<h1>Monad transformers</h1>
+
+<ul>
+  <li><a href="#type">Transformer type constructors</a></li>
+  <li><a href="#lifting">Lifting</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+Monad transformers are special variants of standard monads that facilitate
+the combining of monads.  Their type constructors are parameterized over a
+monad type constructor, and they produce combined monadic types. 
+</p>
+
+<a name="type"><h2>Transformer type constructors</h2></a>
+
+<p>
+Type constructors play a fundamental role in Haskell's monad support.
+Recall that <code>Reader&nbsp;r&nbsp;a</code> is the type of values of type
+<code>a</code> within a Reader monad with environment of type <code>r</code>.
+The type constructor <code>Reader&nbsp;r</code> is an instance of the
+<code>Monad</code> class, and the <code>runReader::(r->a)</code> function
+performs a computation in the Reader monad and returns the result of type
+<code>a</code>.
+</p>
+
+<p>
+A transformer version of the Reader monad, called <code>ReaderT</code>,
+exists which adds a monad type constructor as an addition parameter.
+<code>ReaderT&nbsp;r&nbsp;m&nbsp;a</code> is the type of values of
+the combined monad in which Reader is the <dfn>base monad</dfn>
+and <code>m</code> is the <dfn>inner monad</dfn>.
+<code>ReaderT&nbsp;r&nbsp;m</code> is an instance of the monad class,
+and the <code>runReaderT::(r&nbsp;->&nbsp;m&nbsp;a)</code>
+function performs a computation in the combined monad and returns a
+result of type <code>m&nbsp;a</code>.
+</p>
+
+<p>
+Using the transformer versions of the monads, we can produce combined monads
+very simply.  <code>ReaderT&nbsp;r&nbsp;IO</code> is a combined Reader+IO monad.
+We can also generate the non-transformer version of a monad from the
+transformer version by applying it to the Identity monad.  So 
+<code>ReaderT&nbsp;r&nbsp;Identity</code> is the same monad as
+<code>Reader&nbsp;r</code>.
+</p>
+
+<p><img src="info.png" align="left"></img>
+If your code produces kind errors during compilation, it means that you are
+not using the type cosntructors properly.  Make sure that you have supplied
+the correct number of parameters to the type constructors and that you
+have not left out any parenthesis in complex type expressions.
+</p>
+
+<a name="lifting"><h2>Lifting</h2></a>
+
+<p>
+When using combined monads created by the monad transformers, we avoid having
+to explicitly manage the inner monad types, resulting in clearer, simpler code.
+Instead of creating additional do-blocks within the computation to manipulate
+values in the inner monad type, we can use lifting operations to bring
+functions from the inner monad into the combined monad.
+</p>
+
+<p>
+Recall the <code>liftM</code> family of functions which are used to
+lift non-monadic functions into a monad.  Each monad transformer provides
+a <code>lift</code> function that is used to lift a monadic computation
+into a combined monad.  Many transformers also provide a <code>liftIO</code>
+function, which is a version of <code>lift</code> that is optimized for
+lifting computations in the <code>IO</code> monad.  To see this in action,
+we will continue to develop our previous example in the Continuation monad.
+</p>
+
+<a name="example"></a>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example21.hs">example21.hs</a></th>
+</tr>
+<tr><td><pre>
+fun :: IO String
+fun = (`runContT` return) $ do
+        n   <- liftIO (readLn::IO Int)
+        str <- callCC $ \exit1 -> do     -- define "exit1"
+          when (n < 10) (exit1 (show n))
+          let ns = map digitToInt (show (n `div` 2))
+          n' <- callCC $ \exit2 -> do    -- define "exit2"
+            when ((length ns) < 3) (exit2 (length ns))
+            when ((length ns) < 5) $ do liftIO $ putStrLn "Enter a number:"
+                                        x <- liftIO (readLn::IO Int)
+                                        exit2 x
+            when ((length ns) < 7) $ do let ns' = map intToDigit (reverse ns)
+                                        exit1 (dropWhile (=='0') ns')  --escape 2 levels
+            return $ sum ns
+          return $ "(ns = " ++ (show ns) ++ ") " ++ (show n')
+        return $ "Answer: " ++ str
+</pre></td></tr></table>
+
+<p>
+Compare this function using <code>ContT</code>, the transformer version of
+<code>Cont</code>, with the original version to see how unobtrusive the
+changes become when using the monad transformer.
+</p>
+
+<table bgcolor="#bbaa55" width="100%" border="1">
+<tr bgcolor="#aabb55">
+<th align="center">Nested monads from example 19</th>
+<th align="center">Monads combined with a transformer from example 21</th>
+</tr>
+<tr><td><font size="-1"><pre>
+fun = do n <- (readLn::IO Int)
+         return $ (`runCont` <font color="green"><b>id</b></font>) $ do
+           str <- callCC $ \exit1 -> do
+             when (n < 10) (exit1 (show n))
+             let ns = map digitToInt (show (n `div` 2))
+             n' <- callCC $ \exit2 -> do
+               when ((length ns) < 3) (exit2 (length ns))
+               when ((length ns) < 5) (exit2 <font color="green"><b>n</b></font>)
+               when ((length ns) < 7) $ do
+                 let ns' = map intToDigit (reverse ns)
+                 exit1 (dropWhile (=='0') ns')
+               return $ sum ns
+             return $ "(ns = " ++ (show ns) ++ ") " ++ (show n')
+           return $ "Answer: " ++ str
+</pre></font></td>
+<td><font size="-1"><pre>
+fun = (`runCont<font color="red"><b>T</b></font>` <font color="red"><b>return</b></font>) $ do
+        n   <- <font color="red"><b>liftIO</b></font> (readLn::IO Int)
+        str <- callCC $ \exit1 -> do
+          when (n < 10) (exit1 (show n))
+          let ns = map digitToInt (show (n `div` 2))
+          n' <- callCC $ \exit2 -> do
+            when ((length ns) < 3) (exit2 (length ns))
+            when ((length ns) < 5) $ <font color="red"><b>do
+              liftIO $ putStrLn "Enter a number:"
+              x <- liftIO (readLn::IO Int)</b></font>
+              exit2 <font color="red"><b>x</b></font>
+            when ((length ns) < 7) $ do
+              let ns' = map intToDigit (reverse ns)
+              exit1 (dropWhile (=='0') ns')
+            return $ sum ns
+          return $ "(ns = " ++ (show ns) ++ ") " ++ (show n')
+        return $ "Answer: " ++ str
+</font></pre></td></tr></table>
+
+<p>
+The impact of adding the I/O in the middle of the computation is narrowly confined
+when using the monad transformer.  Contrast this with the
+<a href="hardway.html#comparison">changes</a> required to achieve the same
+result using a manually combined monad.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="hardway.html">Combining monads the hard way</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="standardxformers.html">Standard monad transformers</a></td>
+</tr>
+</table>	
+
+</body>

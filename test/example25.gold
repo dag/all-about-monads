@@ -1,0 +1,72 @@
+8   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+7   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+6   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+5   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+4   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+3   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+2   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+1 bQ|  |  |  |  |  |  |  
+  a  b  c  d  e  f  g  h
+64 possible choices
+Added Queen at a1
+8   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+7   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+6   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+5   |  |bQ|  |  |  |  |  
+  --+--+--+--+--+--+--+--
+4   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+3   |bQ|  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+2   |  |  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+1 bQ|  |  |  |  |  |  |  
+  a  b  c  d  e  f  g  h
+64 possible choices
+Added Queen at a1
+42 possible choices
+Added Queen at b3
+25 possible choices
+Added Queen at c5
+8   |  |bQ|  |  |  |  |  
+  --+--+--+--+--+--+--+--
+7   |  |  |  |  |bQ|  |  
+  --+--+--+--+--+--+--+--
+6   |  |  |bQ|  |  |  |  
+  --+--+--+--+--+--+--+--
+5   |bQ|  |  |  |  |  |  
+  --+--+--+--+--+--+--+--
+4   |  |  |  |  |  |  |bQ
+  --+--+--+--+--+--+--+--
+3   |  |  |  |bQ|  |  |  
+  --+--+--+--+--+--+--+--
+2   |  |  |  |  |  |bQ|  
+  --+--+--+--+--+--+--+--
+1 bQ|  |  |  |  |  |  |  
+  a  b  c  d  e  f  g  h
+64 possible choices
+Added Queen at a1
+42 possible choices
+Added Queen at b5
+25 possible choices
+Added Queen at c8
+16 possible choices
+Added Queen at d6
+8 possible choices
+Added Queen at e3
+4 possible choices
+Added Queen at f7
+2 possible choices
+Added Queen at g2
+1 possible choices
+Added Queen at h4

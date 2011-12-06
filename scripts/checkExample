@@ -1,0 +1,76 @@
+#!/bin/bash
+
+function checkExample()
+{
+    local base
+    local src
+    local prog
+    
+    base=$1
+    src=../examples/${base}.hs
+    prog=./test_${base}
+    
+    echo -n "Example $base: "
+
+    # check for source file
+    if [ ! -r $src ]
+    then
+      echo "No example source file $src"
+      return 1
+    fi
+
+    # get build arguments, if any
+    if [ -f ${base}.args ]
+    then
+      bldargs=$(< ${base}.args)
+    else
+      bldargs=""
+    fi
+    
+    # build the executable
+    rm -f ${base}.o
+    ghc $bldargs --make $src -o $prog > ${base}.log 2>&1
+    if [ $? -ne 0 ]
+    then
+      echo "failed to build.  See ${base}.log"
+      return 1
+    fi
+    
+    # run the tests and check the output against the gold file
+    if [ -x ${base}.run ]
+    then
+      ./${base}.run $prog > ${base}.out 2>&1
+      diff ${base}.out ${base}.gold > ${base}.diff
+      if [ $? -ne 0 ]
+      then
+        echo "did not match ${base}.gold.  See ${base}.diff"
+	return 1
+      fi
+    else
+      echo "could not execute ${base}.run"
+      return 1
+    fi
+    
+    # clean up
+    rm -f $prog ${base}.log ${base}.out ${base}.diff ${base}.o
+    
+    echo "OK"
+    return 0
+}
+
+# Execution begins here
+
+if [ $# -eq 0 ]
+then
+  for f in ../examples/*.hs
+  do
+    checkExample $(basename $f .hs)
+  done
+else
+  for arg in $*
+  do
+    checkExample $arg
+  done
+fi
+
+rm -f ../examples/*.hi ../examples/*.o

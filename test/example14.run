@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cat ../examples/example14.hs | $1 "aeiou" "X" 
+cat ../examples/example14.hs | $1 " " "_"
+$1 "abc"

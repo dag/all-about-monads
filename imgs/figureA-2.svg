@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"
+[
+ <!ATTLIST svg
+  xmlns:xlink CDATA #FIXED "http://www.w3.org/1999/xlink">
+]>
+<!-- Created with Sodipodi ("http://www.sodipodi.com/") -->
+<svg
+   id="svg101"
+   sodipodi:version="0.31"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   width="18cm"
+   height="18cm"
+   sodipodi:docbase="/home/jnewbern/haskell/monads/"
+   sodipodi:docname="/home/jnewbern/haskell/monads/figureA-2.svg">
+  <defs
+     id="defs103">
+    <linearGradient
+       id="linearGradient105">
+      <stop
+         style="stop-color:#000;stop-opacity:1;"
+         offset="0"
+         id="stop106" />
+      <stop
+         style="stop-color:#fff;stop-opacity:1;"
+         offset="1"
+         id="stop107" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient105"
+       id="linearGradient108"
+       x1="0.992565"
+       y1="0.555557"
+       x2="-0.609665"
+       y2="0.555555"
+       gradientUnits="objectBoundingBox"
+       spreadMethod="pad" />
+    <radialGradient
+       xlink:href="#linearGradient105"
+       id="radialGradient157"
+       cx="0.490683"
+       cy="0.53909"
+       fx="0.490683"
+       fy="0.53909"
+       r="1.60652"
+       gradientUnits="objectBoundingBox"
+       spreadMethod="pad" />
+  </defs>
+  <sodipodi:namedview
+     id="base" />
+  <rect
+     style="font-size:12;fill:#808080;fill-opacity:0.644295;fill-rule:evenodd;stroke:#000000;stroke-width:1.28007;stroke-linejoin:round;"
+     id="rect143"
+     width="573.676969"
+     height="60.335701"
+     x="60.285956"
+     y="116.226936"
+     transform="translate(-27.9023,-34.2437)" />
+  <rect
+     style="font-size:12;fill:#1d418e;fill-rule:evenodd;stroke:#000000;stroke-width:0.625;stroke-linejoin:round;"
+     id="rect144"
+     width="42.905300"
+     height="40.223701"
+     x="65.003555"
+     y="123.973862"
+     transform="translate(-27.9023,-31.9346)" />
+  <path
+     style="font-size:12;fill:#808080;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     d="M 60.3853 178.301 L 60.3853 275.484 L 131.149 275.484 L 131.149 226.893 L 116.053 178.301 L 60.3853 178.301 z "
+     id="path146"
+     sodipodi:nodetypes="cccccc"
+     transform="translate(-27.9023,-34.2437)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="65.4658"
+     y="192.033"
+     id="text149"
+     transform="translate(-27.9023,-34.2437)">
+    <tspan
+       x="65.4658"
+       y="192.033"
+       sodipodi:role="line"
+       id="tspan154">
+Loader</tspan>
+  </text>
+  <rect
+     style="font-size:12;fill:url(#radialGradient157);fill-rule:evenodd;stroke:#000000;stroke-width:0.49773pt;"
+     id="rect156"
+     width="54.158226"
+     height="43.445543"
+     x="68.441499"
+     y="226.550980"
+     transform="translate(-27.9023,-34.2437)" />
+  <rect
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect158"
+     width="80.9395"
+     height="70.2269"
+     x="157.118"
+     y="111.688"
+     transform="translate(-27.9023,-34.2437)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="136.357"
+     y="98.4507"
+     id="text159">
+    <tspan
+       x="136.357"
+       y="98.4507"
+       sodipodi:role="line"
+       id="tspan162">
+Combiner</tspan>
+  </text>
+  <rect
+     style="font-size:12;fill:#4bad55;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect168"
+     width="66.656097"
+     height="69.631798"
+     x="239.843132"
+     y="178.343987"
+     transform="translate(-27.9023,-34.2437)" />
+  <path
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     d="M 219.001 322.961 C 187.793 323.283 162.799 298.216 162.477 267.008 C 162.475 266.804 162.474 266.63 162.474 266.426 L 219.013 266.426 C 219.013 266.426 218.665 298.834 219.001 322.961 z "
+     id="path167"
+     sodipodi:nodetypes="ccccc"
+     transform="translate(-8.8577,-118.754)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="248.175"
+     y="192.033"
+     id="text169"
+     transform="translate(-27.9023,-34.2437)">
+    <tspan
+       x="248.175"
+       y="192.033"
+       sodipodi:role="line"
+       id="tspan172">
+Worker</tspan>
+  </text>
+  <text
+     style="font-size:8;font-weight:normal;stroke-width:1pt;font-family:Arial;font-style:normal;text-anchor:start;writing-mode:lr;"
+     x="217.161"
+     y="183.508"
+     id="text174"
+     transform="translate(-1.34525,-7.62939e-06)">
+    <tspan
+       x="217.161"
+       y="183.508"
+       sodipodi:role="line"
+       id="tspan379">
+makeChopsticks</tspan>
+  </text>
+  <rect
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect198"
+     width="80.9395"
+     height="70.2269"
+     x="157.118"
+     y="111.688"
+     transform="matrix(1,-1.22461e-16,-1.22461e-16,-1,131.596,258.763)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="164.259"
+     y="149.182"
+     id="text199"
+     transform="translate(131.596,-50.7313)">
+    <tspan
+       x="164.259"
+       y="149.182"
+       sodipodi:role="line"
+       id="tspan200">
+Combiner</tspan>
+  </text>
+  <rect
+     style="font-size:12;fill:#4bad55;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect202"
+     width="66.656097"
+     height="69.631798"
+     x="239.843132"
+     y="178.343987"
+     transform="matrix(1,-1.22461e-16,-1.22461e-16,-1,131.596,258.763)" />
+  <path
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     d="M 219.001 322.961 C 187.793 323.283 162.799 298.216 162.477 267.008 C 162.475 266.804 162.474 266.63 162.474 266.426 L 219.013 266.426 C 219.013 266.426 218.665 298.834 219.001 322.961 z "
+     id="path203"
+     sodipodi:nodetypes="ccccc"
+     transform="matrix(1,-1.22461e-16,-1.22461e-16,-1,150.641,343.273)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="407.673"
+     y="61.3687"
+     id="text204"
+     transform="translate(-27.9023,-34.2437)">
+    <tspan
+       x="407.673"
+       y="61.3687"
+       sodipodi:role="line"
+       id="tspan205">
+Worker</tspan>
+  </text>
+  <text
+     style="font-size:8;font-weight:normal;stroke-width:1pt;font-family:Arial;font-style:normal;text-anchor:start;writing-mode:lr;"
+     x="375.39"
+     y="51.2865"
+     id="text207"
+     transform="translate(-0.745926,-7.62939e-06)">
+    <tspan
+       x="375.39"
+       y="51.2865"
+       sodipodi:role="line"
+       id="tspan381">
+polishChopsticks</tspan>
+  </text>
+  <g
+     id="g222"
+     transform="translate(28.5363,-26.634)"
+     style="font-size:12;">
+    <path
+       style="font-size:12;fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;fill-opacity:1;stroke-opacity:1;"
+       d="M 145.674 279.626 L -126.963 417.949 L 145.674 556.272 L 46.3884 444.181 L 594.894 472.192 L 593.386 364.825 L 45.4403 391.888 L 145.674 279.626 z "
+       id="path142"
+       sodipodi:nodetypes="cccccccc"
+       transform="matrix(-0.075,1.83692e-17,1.83692e-17,0.075,202.382,45.325)" />
+    <text
+       style="fill:black;stroke:none;font-family:helvetica;font-style:normal;font-weight:normal;font-size:12px;fill-opacity:1;stroke-opacity:1;stroke-width:1pt;stroke-linejoin:miter;stroke-linecap:butt;"
+       x="60.704655"
+       y="79.550507"
+       id="text181">
+      <tspan
+         id="tspan182">
+Conveyer flows</tspan>
+    </text>
+  </g>
+  <rect
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect230"
+     width="80.9395"
+     height="70.2269"
+     x="157.118"
+     y="111.688"
+     transform="translate(292.34,-34.2437)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="164.259"
+     y="149.182"
+     id="text231"
+     transform="translate(292.34,-50.7313)">
+    <tspan
+       x="164.259"
+       y="149.182"
+       sodipodi:role="line"
+       id="tspan232">
+Combiner</tspan>
+  </text>
+  <rect
+     style="font-size:12;fill:#4bad55;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     id="rect234"
+     width="66.656097"
+     height="69.631798"
+     x="239.843132"
+     y="178.343987"
+     transform="translate(292.34,-34.2437)" />
+  <path
+     style="font-size:12;fill:#ffa800;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;"
+     d="M 219.001 322.961 C 187.793 323.283 162.799 298.216 162.477 267.008 C 162.475 266.804 162.474 266.63 162.474 266.426 L 219.013 266.426 C 219.013 266.426 218.665 298.834 219.001 322.961 z "
+     id="path235"
+     sodipodi:nodetypes="ccccc"
+     transform="translate(311.385,-118.754)" />
+  <text
+     style="font-size:14;font-weight:bold;stroke-width:1pt;font-family:Arial;"
+     x="248.175"
+     y="192.033"
+     id="text236"
+     transform="translate(292.34,-34.2437)">
+    <tspan
+       x="248.175"
+       y="192.033"
+       sodipodi:role="line"
+       id="tspan237">
+Worker</tspan>
+  </text>
+  <text
+     style="font-size:8;font-weight:normal;stroke-width:1pt;font-family:Arial;font-style:normal;text-anchor:start;writing-mode:lr;"
+     x="538.671"
+     y="183.508"
+     id="text239"
+     transform="translate(-1.24969,-7.62939e-06)">
+    <tspan
+       x="538.671"
+       y="183.508"
+       sodipodi:role="line"
+       id="tspan383">
+wrapChopsticks</tspan>
+  </text>
+  <text
+     style="fill:black;stroke:none;font-family:Arial;font-style:normal;font-weight:normal;font-size:8;fill-opacity:1;stroke-opacity:1;stroke-width:1pt;stroke-linejoin:miter;stroke-linecap:butt;text-anchor:middle;writing-mode:lr;"
+     x="51.9996"
+     y="176.14"
+     id="text385"
+     transform="translate(9.52727,-7.62939e-06)">
+    <tspan
+       x="51.9996"
+       y="176.14"
+       sodipodi:role="line"
+       id="tspan401">
+return</tspan>
+  </text>
+  <text
+     style="fill:black;stroke:none;font-family:Arial;font-style:normal;font-weight:normal;font-size:8;fill-opacity:1;stroke-opacity:1;stroke-width:1pt;stroke-linejoin:miter;stroke-linecap:butt;text-anchor:start;writing-mode:lr;"
+     x="155.998917"
+     y="120.335495"
+     id="text390"
+     transform="translate(6.68261,-7.62939e-06)">
+    <tspan
+       x="155.999"
+       y="120.335"
+       sodipodi:role="line"
+       id="tspan393">
+&gt;&gt;=</tspan>
+  </text>
+  <text
+     style="fill:black;stroke:none;font-family:Arial;font-style:normal;font-weight:normal;font-size:8;fill-opacity:1;stroke-opacity:1;stroke-width:1pt;stroke-linejoin:miter;stroke-linecap:butt;text-anchor:start;writing-mode:lr;"
+     x="155.998917"
+     y="120.335495"
+     id="text395"
+     transform="translate(326.925,-7.62939e-06)">
+    <tspan
+       x="155.999"
+       y="120.335"
+       sodipodi:role="line"
+       id="tspan396">
+&gt;&gt;=</tspan>
+  </text>
+  <text
+     style="fill:black;stroke:none;font-family:Arial;font-style:normal;font-weight:normal;font-size:8;fill-opacity:1;stroke-opacity:1;stroke-width:1pt;stroke-linejoin:miter;stroke-linecap:butt;text-anchor:start;writing-mode:lr;"
+     x="155.998917"
+     y="120.335495"
+     id="text398"
+     transform="translate(166.181,-7.62939e-06)">
+    <tspan
+       x="155.999"
+       y="120.335"
+       sodipodi:role="line"
+       id="tspan399">
+&gt;&gt;=</tspan>
+  </text>
+</svg>

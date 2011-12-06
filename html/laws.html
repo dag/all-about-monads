@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>The monad laws</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="class.html">Doing it with class</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="exercises.html">Exercises</a></td>
+</tr>
+</table>	
+
+<h1>The monad laws</h1>
+<ul>
+<li><a href="#laws">The three fundamental laws</a></li>
+<li><a href="#fail">Failure IS an option</a></li>
+<li><a href="#nowayout">No way out</a></li>
+<li><a href="#zero">Zero and Plus</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<p>
+The tutorial up to now has avoided technical discussions, but there are
+a few technical points that must be made concerning monads.  Monadic
+operations must obey a set of laws, known as "the monad axioms".
+These laws aren't enforced by the Haskell compiler, so it is up to
+the programmer to ensure that any <code>Monad</code> instances he
+declares obey they laws.  Haskell's <code>Monad</code> class also
+includes some functions beyond the minimal complete definition
+that we have not seen yet.  Finally, many monads obey additional
+laws beyond the standard monad laws, and there is an additional
+Haskell class to support these extended monads.
+</p>
+
+<a name="laws"><h2>The three fundamental laws</h2></a>
+
+<p>
+The concept of a monad comes from a branch of mathematics called
+category theory.  While it is not necessary to know category theory
+to create and use monads, we do need to obey a small bit of mathematical
+formalism.  To create a monad, it is not enough just to declare a Haskell
+instance of the <code>Monad</code> class with the correct type signatures.
+To be a proper monad, the <code>return</code> and <code>>>=</code> functions
+must work together according to three laws:
+<ol>
+<li><code>(return x) >>= f == f x</code></li>
+<li><code>m >>= return == m</code></li>
+<li><code>(m >>= f) >>= g == m >>= (\x -> f x >>= g)</code></li>
+</ol>
+</p>
+
+<p>
+The first law requires that <code>return</code> is a left-identity with respect
+to <code>>>=</code>.  The second law requires that <code>return</code> is a
+right-identity with respect to <code>>>=</code>.  The third law is a kind
+of associativity law for <code>>>=</code>.  Obeying the three laws ensures
+that the semantics of the do-notation using the monad will be consistent.
+</p>
+
+<p>
+Any type constructor with return and bind operators that satisfy the three
+monad laws is a monad.  In Haskell, the compiler does not check that the laws
+hold for every instance of the <code>Monad</code> class.  It is up to the
+programmer to ensure that any <code>Monad</code> instance he creates
+satisfies the monad laws.
+</p>
+
+<a name="fail"><h2>Failure IS an option</h2></a>
+
+<p>
+The definition of the <code>Monad</code> class given
+<a href="class.html#monad">earlier</a> showed only the minimal complete
+definition.  The full definition of the <code>Monad</code> class
+actually includes two additional functions: <code>fail</code> and <code>>></code>.
+</p>
+
+<p>
+The default implementation of the <code>fail</code> function is:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+fail s = error s
+</pre></td></tr></table>  
+You do not need to change this for your monad unless you want to
+provide different behavior for failure or to incorporate failure
+into the computational strategy of your monad.  The <code>Maybe</code>
+monad, for instance, defines <code>fail</code> as:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+fail _ = Nothing
+</pre></td></tr></table>  
+so that <code>fail</code> returns an instance of the <code>Maybe</code>
+monad with meaningful behavior when it is bound with other functions
+in the <code>Maybe</code> monad.
+</p>
+
+<p>
+The <code>fail</code> function is not a required part of the
+mathematical definition of a monad, but it is included in the
+standard <code>Monad</code> class definition because of the role
+it plays in Haskell's do notation.  The <code>fail</code> function
+is called whenever a pattern matching failure occurs in a do block:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+fn :: Int -> Maybe [Int]
+fn idx = do let l = [Just [1,2,3], Nothing, Just [], Just [7..20]]
+            (x:xs) <- l!!idx   -- a pattern match failure will call "fail"
+            return xs
+</pre></td></tr></table>  
+So in the code above, <code>fn 0</code> has the value <code>Just [2,3]</code>,
+but <code>fn 1</code> and <code>fn 2</code> both have the value <code>Nothing</code>.
+</p>
+
+<p>
+The <code>>></code> function is a convenience operator that is used
+to bind a monadic computation that does not require input from the
+previous computation in the sequence.  It is defined in terms of <code>>>=</code>:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+(>>) :: m a -> m b -> m b
+m >> k = m >>= (\_ -> k)
+</pre></td></tr></table>  
+</p>
+
+<a name="nowayout"><h2>No way out</h2></a>
+
+<p>
+You might have noticed that there is no way to get values
+out of a monad as defined in the standard <code>Monad</code> class.
+That is not an accident.  Nothing prevents the monad author from
+allowing it using functions specific to the monad.  For instance,
+values can be extracted from the <code>Maybe</code> monad by pattern
+matching on <code>Just x</code> or using the <code>fromJust</code>
+function.
+</p>
+
+<p>
+By not requiring such a function, the Haskell <code>Monad</code>
+class allows the creation of <dfn>one-way</dfn> monads.  One-way
+monads allow values to enter the monad through the <code>return</code>
+function (and sometimes the <code>fail</code> function) and they
+allow computations to be performed within the monad using the bind
+functions <code>>>=</code> and <code>>></code>, but they do not
+allow values back out of the monad.
+</p>
+
+<p>
+The <code>IO</code> monad is a familiar example of a one-way monad in Haskell.
+Because you can't escape from the <code>IO</code> monad, it is impossible to write
+a function that does a computation in the <code>IO</code> monad but whose result
+type does not include the <code>IO</code> type constructor.  This means that
+<em>any</em> function whose result type does not contain the <code>IO</code> type
+constructor is guaranteed not to use the <code>IO</code> monad.
+Other monads, such as <code>List</code> and <code>Maybe</code>,
+do allow values out of the monad.  So it is possible to write functions which
+use these monads internally but return non-monadic values.
+</p>
+
+<p>
+<em>The wonderful feature of a one-way monad is that it can support
+side-effects in its monadic operations but prevent them from
+destroying the functional properties of the non-monadic
+portions of the program.</em>
+</p>
+
+<p>
+Consider the simple issue of reading a character from the user.
+We cannot simply have a function <code>readChar :: Char</code>,
+because it needs to return a different character each time it
+is called, depending on the input from the user.  It is an
+essential property of Haskell as a pure functional language
+that all functions return the same value when called twice
+with the same arguments.  But it <em>is</em> ok to have an I/O function
+<code>getChar :: IO Char</code> in the <code>IO</code> monad,
+because it can only be used in a sequence within the one-way
+monad.  There is no way to get rid of the <code>IO</code>
+type constructor in the signature of any function that uses it,
+so the <code>IO</code> type constructor acts as a kind of tag
+that identifies all functions that do I/O.  Furthermore, 
+such functions are only useful within the <code>IO</code> monad.
+So a one-way monad effectively creates an isolated computational
+domain in which the rules of a pure functional language can
+be relaxed.  Functional computations can move into the domain,
+but dangerous side-effects and non-referentially-transparent
+functions cannot escape from it.
+</p>
+
+<p>
+Another common pattern when defining monads is to represent
+monadic values as functions.  Then when the value of a monadic
+computation is required, the resulting monad is "run" to
+provide the answer.
+</p>
+
+<a name="zero"><h2>Zero and Plus</h2></a>
+
+<p>
+Beyond the three monad laws stated above, some monads obey additional laws.
+The monads have a special value <code>mzero</code> and an operator
+<code>mplus</code> that obey four additional laws:
+<ol>
+<li><code>mzero >>= f == mzero</code></li>
+<li><code>m >>= (\x -> mzero) == mzero</code></li>
+<li><code>mzero `mplus` m == m</code></li>
+<li><code>m `mplus` mzero == m</code></li>
+</ol>
+</p>
+
+<p>
+It is easy to remember the laws for <code>mzero</code> and <code>mplus</code>
+if you associate <code>mzero</code> with 0, <code>mplus</code> with +,
+and <code>>>=</code> with &times; in ordinary arithmetic.
+</p>
+
+<p>
+Monads which have a zero and a plus can be declared as instances of the
+<code>MonadPlus</code> class in Haskell:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+class (Monad m) => MonadPlus m where
+    mzero :: m a
+    mplus :: m a -> m a -> m a
+</pre></td></tr></table>  
+</p>
+
+<p>
+Continuing to use the <code>Maybe</code> monad as an example, we see that
+the <code>Maybe</code> monad is an instance of <code>MonadPlus</code>:
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+instance MonadPlus Maybe where
+    mzero             = Nothing
+    Nothing `mplus` x = x
+    x `mplus` _       = x
+</pre></td></tr></table>
+This identifies <code>Nothing</code> as the zero value and says that
+adding two <code>Maybe</code> values together gives the first
+value that is not <code>Nothing</code>.  If both input values are
+<code>Nothing</code>, then the result of <code>mplus</code> is
+also <code>Nothing</code>.  
+</p>
+
+<p>
+The List monad also has a zero and a plus.  <code>mzero</code> is the
+empty list and <code>mplus</code> is the <code>++</code> operator.
+</p>
+
+<p>
+The <code>mplus</code> operator is used to combine monadic values from
+separate computations into a single monadic value.  Within the context
+of our sheep-cloning example, we could use <code>Maybe</code>'s
+<code>mplus</code> to define a function,
+<code>parent&nbsp;s&nbsp;=&nbsp;(mother&nbsp;s)&nbsp;`mplus`&nbsp;(father&nbsp;s)</code>,
+which would return a parent if there is one, and <code>Nothing</code> is the sheep has no parents at all.
+For a sheep with both parents, the function would return one or the
+other, depending on the exact definition of <code>mplus</code> in the
+<code>Maybe</code> monad.
+</p>
+
+<a name="summary"><h2>Summary</h2></a>
+
+<p>
+Instances of the <code>Monad</code> class should conform to the 
+so-called monad laws, which describe algabraic properties of
+monads.  There are three of these laws which state that
+the <code>return</code> function is both a left and a right
+identity and that the binding operator is associative.
+Failure to satisfy these laws will result in monads that
+do not behave properly and may cause subtle problems when
+using do-notation.
+</p>
+
+<p>
+In addition to the <code>return</code> and <code>>>=</code> functions,
+the <code>Monad</code> class defines another function, <code>fail</code>.
+The <code>fail</code> function is not a technical requirement for
+inclusion as a monad, but it is often useful in practice and it
+is included in the <code>Monad</code> class because it is used
+in Haskell's do-notation.
+</p>
+
+<p>
+Some monads obey laws beyond the three basic monad laws.  An important
+class of such monads are ones which have a notion of a zero element
+and a plus operator.  Haskell provides a <code>MonadPlus</code> class
+for such monads which define the <code>mzero</code> value and the
+<code>mplus</code> operator.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="class.html">Doing it with class</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="exercises.html">Exercises</a></td>
+</tr>
+</table>	
+
+</body>
+</html>		

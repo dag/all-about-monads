@@ -1,0 +1,5 @@
+#!/bin/sh
+
+$1 "John"
+$1 "Mike"
+$1 "Fred"

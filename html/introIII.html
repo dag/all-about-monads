@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Part III - Introduction</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="contmonad.html">The Continuation monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="hardway.html">Combining monads the hard way</a></td>
+</tr>
+</table>	
+
+<h1>Introduction</h1>
+
+<hr align="center" size="1" width="80%">
+
+<p>
+Part I has introduced the monad concept and Part II has provided an understanding
+of a number of common, useful monads in the standard Haskell libraries.  This
+is not enough to put monads into heavy practice, however, because in the real world
+you often want computations which combine aspects of more than one
+monad at the same time, such as stateful, non-determistic computations or
+computations which make use of continuations and perform I/O.  When one computation
+is a strict subset of the other, it is possible to perform the monad computations
+separately, unless the sub-computation is performed in a one-way monad.
+</p>
+
+<p>
+Often, the computations can't be performed in isolation.  In this case, what
+is needed is a monad that combines the features of the two monads into a single
+computation.  It is inefficient and poor practice to write a new monad instance
+with the required characteristics each time a new combination is desired.  Instead,
+we would prefer to develop a way to combine the standard monads to produce
+the needed hybrids.  The technique that lets us do exactly that is
+called <dfn>monad transformers</dfn>.
+</p>
+
+<p>
+Monad transformers are the topic of Part III, and they are explained by revisiting
+earlier examples to see how monad transformers can be used to add more realistic
+capabilities to them.  It may be helpful to review the earlier examples as
+they are re-examined.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="contmonad.html">The Continuation monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="hardway.html">Combining monads the hard way</a></td>
+</tr>
+</table>	
+
+</body>		

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Solution to exercise 3</title>
+</head>
+<body>
+
+<h1>Solution to <a href="exercises.html#exercise3">Exercise 3</a></h1>
+
+<p>
+The definition of <code>parent</code> in the List monad is very
+similar to the definition in the Maybe monad.  The only difference is
+the need to convert the values returned by <code>mother</code> and
+<code>father</code> from the Maybe monad to the List monad using the
+<code>Maybe.maybeToList</code> function.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise3.hs">exercise3.hs</a></th>
+</tr>
+<tr><td><pre>
+parent :: Sheep -> [Sheep]
+parent s = (maybeToList (mother s)) `mplus` (maybeToList (father s))
+</pre></td></tr></table>
+
+<p>
+Unlike our definition of <code>grandparent</code> in the Maybe monad,
+we can use the simpler form in the List monad since the List
+monad does implement a backtracking strategy:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise3.hs">exercise3.hs</a></th>
+</tr>
+<tr><td><pre>
+grandparent :: Sheep -> [Sheep]
+grandparent s = do p <- parent s
+                   parent p
+</pre></td></tr></table>
+
+<p>
+<a href="exercises.html">Return to exercises.</a>
+</p>
+
+</body>
+</html>		

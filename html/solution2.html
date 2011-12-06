@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Solution to exercise 2</title>
+</head>
+<body>
+
+<h1>Solution to <a href="exercises.html#exercise2">Exercise 2</a></h1>
+
+<p>
+The two choices for a parent are the mother and the father, suggesting
+a straightforward implementation of the <code>parent</code> function
+using the <code>mplus</code> operator:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise2.hs">exercise2.hs</a></th>
+</tr>
+<tr><td><pre>
+parent :: Sheep -> Maybe Sheep
+parent s = (mother s) `mplus` (father s)
+</pre></td></tr></table>
+
+<p>
+In this case, the <code>mplus</code> operator is used to combine the
+values from the monadic functions <code>mother</code> and
+<code>father</code>.
+</p>
+
+<p>
+The <code>grandparent</code> function is a little trickier.  You might
+be tempted to simply write:
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+grandparent s = do p <- parent s
+                   parent p
+</pre></td></tr></table>
+
+<p>
+but this is not correct.  To see why not, you must remember that 
+the <code>mplus</code> operator in the Maybe monad
+returns its first argument unless it is <code>Nothing</code>, in
+which case it returns its second argument.  Imagine what would happen
+if the sheep had a mother without parents but a father with parents.
+Then <code>p</code> would be the mother and <code>parent p</code>
+would be <code>Nothing</code>, even though there are grandparents on
+the father's side.
+</p>
+
+<p>
+The problem is that there is no back-tracking
+facility in the Maybe monad's strategy for <code>mplus</code>.
+We can get around this by carefully defining the
+<code>grandparent</code> function so that no backtracking is required:
+<p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/exercise2.hs">exercise2.hs</a></th>
+</tr>
+<tr><td><pre>
+grandparent :: Sheep -> Maybe Sheep
+grandparent s = (mother s >>= parent) `mplus` (father s >>= parent)
+</pre></td></tr></table>
+
+<p>
+<a href="exercises.html">Return to exercises.</a>
+</p>
+
+</body>
+</html>		

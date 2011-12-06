@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Introduction</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="index.html">Table of Contents</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="meet.html">Meet the Monads</a></td>
+</tr>
+</table>
+
+<h1>Introduction</h1>
+<ul>
+<li><a href="#what">What is a monad?</a></li>
+<li><a href="#why">Why should I make the effort to understand monads?</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<a name="what"><h2>What is a monad?</h2></a>
+
+<p>
+A monad is a way to structure computations in terms of values and sequences
+of computations using those values.  Monads allow
+the programmer to build up computations using sequential building blocks,
+which can themselves be sequences of computations.  The monad determines how
+combined computations form a new computation and frees the programmer from
+having to code the combination manually each time it is required.
+</p>
+
+<p>
+<em>It is useful to think of a monad as a strategy for combining computations
+into more complex computations.</em>  For example, you should be familiar with
+the <code>Maybe</code> type in Haskell:
+<pre>
+data Maybe a = Nothing | Just a
+</pre>
+which represents the type of computations which may fail to return a result.
+The <code>Maybe</code> type suggests a strategy for combining computations
+which return <code>Maybe</code> values: if a combined computation consists
+of one computation <code>B</code> that depends on the result of another
+computation <code>A</code>, then the combined computation should yield
+<code>Nothing</code> whenever either <code>A</code> or <code>B</code> yield
+<code>Nothing</code> and the combined computation should yield the result
+of <code>B</code> applied to the result of <code>A</code> when both
+computations succeed.
+</p>
+
+<p>
+Other monads exist for building computations that perform I/O, have state,
+may return multiple results, etc.  There are as many different type of monads
+as there are strategies for combining computations, but there are certain
+monads that are especially useful and are common enough that they are part of
+the standard <a href="http://www.haskell.org/onlinelibrary/">Haskell 98 libraries</a>.
+These monads are each described in <a href="introII.html">Part II</a>.
+</p>
+
+<a name="why"><h2>Why should I make the effort to understand monads?</h2></a>
+
+<p>
+The sheer number of different <a href="http://haskell.cs.yale.edu/bookshelf/#monads">
+monad tutorials</a> on the internet is a good
+indication of the difficulty many people have understanding the concept.
+This is due to the abstract nature of monads and to the fact that they
+are used in several different capacities, which can confuse the picture
+of exactly what a monad is and what it is good for.
+</p>
+
+<p>
+In Haskell, monads play a central role in the I/O system.  It is not
+essential to understand monads to do I/O in Haskell, but understanding
+the I/O monad will improve your code and extend your capabilities.
+</p>
+
+<p>
+For the programmer, monads are useful tools for structuring functional programs.
+They have three properties that make them especially useful:
+<ol>
+	<li>Modularity - They allow computations to be composed from simpler
+	    computations and separate the combination strategy from the
+	    actual computations being performed.
+	</li>
+	<li>Flexibility - They allow functional programs to be much more adaptable
+	    than equivalent programs written without monads.  This is because the
+	    monad distills the computational strategy into a single place instead
+	    of requiring it be distributed throughout the entire program. 
+	</li>
+	<li>Isolation - They can be used to create imperative-style computational
+	    structures which remain safely isolated from the main body of the functional
+	    program.  This is useful for incorporating side-effects (such as I/O) and
+	    state (which violates referential transparency) into a pure functional
+	    language like Haskell.
+	</li>
+</ol>
+Each of these features will be revisited later in the tutorial in the context
+of specific monads.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="index.html">Table of Contents</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="meet.html">Meet the Monads</a></td>
+</tr>
+</table>
+	
+</body>
+</html>

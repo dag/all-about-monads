@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Anatomy of a monad transformer</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="standardxformers.html">Standard monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="xformerexamples.html">More examples with monad transformers</a></td>
+</tr>
+</table>	
+
+<h1>Anatomy of a monad transformer</h1>
+
+<ul>
+  <li><a href="#monad">Combined monad definition</a></li>
+  <li><a href="#lift">Defining the lifting function</a></li>
+  <li><a href="#functor">Functors</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+In this section, we will take a detailed look at the implementation of one
+of the more interesting transformers in the standard library, <code>StateT</code>.
+Studying this transformer will build insight into the transformer mechanism
+that you can call upon when using monad transformers in your code.
+You might want to review the section on the <a href="statemonad.html">State monad</a>
+before continuing.
+</p>
+
+<a name="monad"><h2>Combined monad definition</h2></a>
+
+<p>
+Just as the State monad was built upon the definition
+<pre>newtype State s a = State { runState :: (s -> (a,s)) }</pre>
+the StateT transformer is built upon the definition
+<pre>newtype StateT s m a = StateT { runStateT :: (s -> m (a,s)) }</pre>
+<code>State&nbsp;s</code> is an instance of both the <code>Monad</code>
+class and the <code>MonadState&nbsp;s</code> class, so
+<code>StateT&nbsp;s&nbsp;m</code> should also be members of the
+<code>Monad</code> and <code>MonadState&nbsp;s</code> classes.
+Furthermore, if <code>m</code> is an instance of <code>MonadPlus</code>,
+<code>StateT&nbsp;s&nbsp;m</code> should also be a member of
+<code>MonadPlus</code>.
+</p>
+
+<p>
+To define <code>StateT&nbsp;s&nbsp;m</code> as a <code>Monad</code> instance:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+newtype StateT s m a = StateT { runStateT :: (s -> m (a,s)) }
+
+instance (Monad m) => Monad (StateT s m) where
+    return a          = StateT $ \s -> return (a,s)
+    (StateT x) >>= f  = StateT $ \s -> do (v,s')      <- x s            -- get new value, state
+                                          (StateT x') <- return $ f v   -- apply bound function to get new state transformation fn
+                                          x' s'                         -- apply the state transformation fn to the new state
+</pre></td></tr></table>
+Compare this to the definition for
+<a href="statemonad.html#definition"><code>State&nbsp;s</code></a>.
+Our definition of <code>return</code> makes use of the <code>return</code>
+function of the inner monad, and the binding operator uses a do-block
+to perform a computation in the inner monad.
+</p>
+
+<p>
+We also want to declare all combined monads that use the <code>StateT</code>
+transformer to be instaces of the <code>MonadState</code> class, so
+we will have to give definitions for <code>get</code> and <code>put</code>:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+instance (Monad m) => MonadState s (StateT s m) where
+    get   = StateT $ \s -> return (s,s)
+    put s = StateT $ \_ -> return ((),s)
+</pre></td></tr></table>
+</p>
+
+<p>
+Finally, we want to declare all combined monads in which <code>StateT</code> is used
+with an instance of <code>MonadPlus</code> to be instances of <code>MonadPlus</code>:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+instance (MonadPlus m) => MonadPlus (StateT s m) where
+    mzero = StateT $ \s -> mzero
+    (StateT x1) `mplus` (StateT x2) = StateT $ \s -> (x1 s) `mplus` (x2 s)
+</pre></td></tr></table>
+</p>
+
+<a name="lift"><h2>Defining the lifting function</h2></a>
+
+<p>
+The final step to make our monad transformer fully integrated with Haskell's
+monad classes is to make <code>StateT s</code> an instance of the
+<code>MonadTrans</code> class by providing a <code>lift</code> function:
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+instance MonadTrans (StateT s) where
+    lift c = StateT $ \s -> c >>= (\x -> return (x,s))
+</pre></td></tr></table>
+The <code>lift</code> function creates a <code>StateT</code> state transformation
+function that binds the computation in the inner monad to a function that
+packages the result with the input state.  The result is that a function
+that returns a list (i.e., a computation in the List monad) can be lifted
+into <code>StateT&nbsp;s&nbsp;[]</code>, where it becomes a function that returns a
+<code>StateT&nbsp;(s&nbsp;->&nbsp;[(a,s)])</code>.  That is, the lifted computation
+produces <em>multiple</em> (value,state) pairs from its input state.
+The effect of this is to "fork" the computation in StateT, creating a different
+branch of the computation for each value in the list returned by the lifted function.
+Of course, applying <code>StateT</code> to a different monad will produce different
+semantics for the <code>lift</code> function.
+</p>
+
+<a name="functor"><h2>Functors</h2></a>
+
+<p>
+We have examined the implementation of one monad transformer above, and it was stated
+earlier that there was no magic formula to produce transformer versions of
+monads.  Each transformer's implementation will depend on the nature of
+the computational effects it is adding to the inner monad.
+</p>
+
+<p>
+Despite this, there is some theoretical foundation to the theory of monad
+transformers.  Certain transformers can be grouped according to how they
+use the inner monad, and the transformers within each group can be derived
+using monadic functions and <dfn>functors</dfn>.  Functors, roughly, are
+types which support a mapping operation
+<code>fmap&nbsp;::&nbsp;(a->b)&nbsp;->&nbsp;f&nbsp;a&nbsp;->&nbsp;f&nbsp;b</code>.
+To learn more about it, check out Mark Jones' influential
+<a href="http://www-internal.cse.ogi.edu/~mpj/pubs/springschool95.ps">paper</a> that inspired
+the Haskell monad template library. 
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="standardxformers.html">Standard monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="xformerexamples.html">More examples with monad transformers</a></td>
+</tr>
+</table>	
+
+</body>

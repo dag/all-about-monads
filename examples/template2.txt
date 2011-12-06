@@ -1,0 +1,3 @@
+Test that we can use the variable substitution:
+variable = ${variable}
+var      = ${var}

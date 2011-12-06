@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta name="description" content="A tutorial on Monads in Haskell">
+<title>All About Monads</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left"></td>
+	<td align="center"></td>
+	<td align="right">Next: <a href="introduction.html">Introduction</a></td>
+</tr>
+</table>
+
+<hr align="center" size="1" width="80%">
+
+<center>
+<font size="+3"><b>All About Monads</b></font><br/>
+<i>A comprehensive guide to the theory and practice of monadic
+programming in Haskell</i><br/>
+Version 1.1.0
+</center>
+
+<p>
+This tutorial aims to explain the concept of a monad and its
+application to functional programming in a way that is easy to
+understand and useful to beginning and intermediate Haskell
+programmers.  Familiarity with the Haskell language is assumed,
+but no prior experience with monads is required.  The tutorial
+covers a lot of material and the later sections require a
+thorough understanding of the earlier material.  
+Many code examples are provided along the way to demonstrate
+monadic programming.  It is not advisable to attempt to absorb all
+of the material in a single reading.
+</p>
+
+<p>
+The tutorial is arranged in three parts.  The first part provides
+a basic understanding of the role of monads in functional programming,
+how monads operate, and how they are declared and used in Haskell.
+The second part covers each standard monad in Haskell, giving the
+definition of the monad and discussing the use of the monad.  The third
+part covers advanced material relating to monad transformers and
+real-world issues encountered when programming with monads.
+</p>
+
+<p>You can also download the complete tutorial as a
+<a href="http://www.nomaware.com/monads/monad_tutorial.tgz">compressed tar archive</a>
+or as a
+<a href="http://www.nomaware.com/monads/monad_tutorial.zip">zip archive</a>.
+</p>
+
+<p>
+The best way to really understand monads is to experiment with monadic
+code.  This tutorial provides many <a href="examples.html">code examples</a>
+which range from simple to moderately complex, and you are encouraged to
+study them, play with them, modify them, etc.
+<em>Unfortunately, it is necessary that the early examples must be contrived
+to avoid issues with combining multiple monads.  If you find yourself
+frustrated by this restriction while experimenting with the example code,
+look ahead at Part III to see how it is overcome.</em>
+</p>
+
+<p>
+Please send any comments, corrections, or suggestions to
+Jeff Newbern at
+<a href="mailto:jnewbern@yahoo.com?Subject=Monad Tutorial">jnewbern@yahoo.com</a>
+</p>
+
+<h1>Contents</h1>
+<h2>Part I - Understanding Monads</h2>
+<ul>
+<li><a href="introduction.html">Introduction</a>
+  <ul>
+  <li><a href="introduction.html#what">What is a monad?</a></li>
+  <li><a href="introduction.html#why">Why should I make the effort to understand monads?</li>
+  </ul>
+</li>
+<li><a href="meet.html">Meet the Monads</a>
+  <ul>
+  <li><a href="meet.html#typeconstructors">Type constructors</a></li>
+  <li><a href="meet.html#maybe">Maybe a monad</a></li>
+  <li><a href="meet.html#example1">An example</a></li>
+  <li><a href="meet.html#list">A list is also a monad</a></li>
+  <li><a href="meet.html#summary">Summary</a></li>
+  </ul>
+</li>
+<li><a href="class.html">Doing it with class</a>
+  <ul>
+  <li><a href="class.html#classes">Haskell type classes</a></li>
+  <li><a href="class.html#monad">The Monad class</a></li>
+  <li><a href="class.html#example2">Example continued</a></li>
+  <li><a href="class.html#donotation">Do notation</a></li>
+  <li><a href="class.html#summary">Summary</a></li>
+  </ul>
+</li>
+<li><a href="laws.html">The monad laws</a>
+  <ul>
+  <li><a href="laws.html#laws">The three fundamental laws</a></li>
+  <li><a href="laws.html#fail">Failure IS an option</a></li>
+  <li><a href="laws.html#nowayout">No way out</a></li>
+  <li><a href="laws.html#zero">Zero and Plus</a></li>
+  <li><a href="laws.html#summary">Summary</a></li>
+  </ul>
+</li>
+<li><a href="exercises.html">Exercises</a>
+</li>
+<li><a href="monadfns.html">Monad support in Haskell</a>
+  <ul>
+  <li><a href="monadfns.html#prelude">In the standard prelude</a></li>
+  <li><a href="monadfns.html#monad">In the Monad module</a></li>
+  <li><a href="monadfns.html#summary">Summary</a></li>
+  </ul>
+</li>
+</ul>
+<h2>Part II - A Catalog of Standard Monads</h2>
+<ul>
+<li><a href="introII.html">Introduction</a>
+</li>
+<li><a href="identitymonad.html">The Identity monad</a>
+  <ul>
+  <li><a href="identitymonad.html#overview">Overview</a></li>
+  <li><a href="identitymonad.html#motivation">Motivation</a></li>
+  <li><a href="identitymonad.html#definition">Definition</a></li>
+  <li><a href="identitymonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="maybemonad.html">The Maybe monad</a>
+  <ul>
+  <li><a href="maybemonad.html#overview">Overview</a></li>
+  <li><a href="maybemonad.html#motivation">Motivation</a></li>
+  <li><a href="maybemonad.html#definition">Definition</a></li>
+  <li><a href="maybemonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="errormonad.html">The Error monad</a>
+  <ul>
+  <li><a href="errormonad.html#overview">Overview</a></li>
+  <li><a href="errormonad.html#motivation">Motivation</a></li>
+  <li><a href="errormonad.html#definition">Definition</a></li>
+  <li><a href="errormonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="listmonad.html">The List monad</a>
+  <ul>
+  <li><a href="listmonad.html#overview">Overview</a></li>
+  <li><a href="listmonad.html#motivation">Motivation</a></li>
+  <li><a href="listmonad.html#definition">Definition</a></li>
+  <li><a href="listmonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="iomonad.html">The IO monad</a>
+  <ul>
+  <li><a href="iomonad.html#overview">Overview</a></li>
+  <li><a href="iomonad.html#motivation">Motivation</a></li>
+  <li><a href="iomonad.html#definition">Definition</a></li>
+  <li><a href="iomonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="statemonad.html">The State monad</a>
+  <ul>
+  <li><a href="statemonad.html#overview">Overview</a></li>
+  <li><a href="statemonad.html#motivation">Motivation</a></li>
+  <li><a href="statemonad.html#definition">Definition</a></li>
+  <li><a href="statemonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="readermonad.html">The Reader monad</a>
+  <ul>
+  <li><a href="readermonad.html#overview">Overview</a></li>
+  <li><a href="readermonad.html#motivation">Motivation</a></li>
+  <li><a href="readermonad.html#definition">Definition</a></li>
+  <li><a href="readermonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="writermonad.html">The Writer monad</a>
+  <ul>
+  <li><a href="writermonad.html#overview">Overview</a></li>
+  <li><a href="writermonad.html#motivation">Motivation</a></li>
+  <li><a href="writermonad.html#definition">Definition</a></li>
+  <li><a href="writermonad.html#example">Example</a></li>
+  </ul>
+</li>
+<li><a href="contmonad.html">The Continuation monad</a>
+  <ul>
+  <li><a href="contmonad.html#overview">Overview</a></li>
+  <li><a href="contmonad.html#motivation">Motivation</a></li>
+  <li><a href="contmonad.html#definition">Definition</a></li>
+  <li><a href="contmonad.html#example">Example</a></li>
+  </ul>
+</li>
+</ul>
+<h2>Part III - Monads in the Real World</h2>
+<ul>
+<li><a href="introIII.html">Introduction</a></li>
+<li><a href="hardway.html">Combining monads the hard way</a>
+  <ul>
+  <li><a href="hardway.html#nested">Nested Monads</a></li>
+  <li><a href="hardway.html#combined">Combined Monads</a></li>
+  </ul>  
+</li>
+<li><a href="transformers.html">Monad transformers</a>
+  <ul>
+  <li><a href="transformers.html#type">Transformer type constructors</a></li>
+  <li><a href="transformers.html#lifting">Lifting</a></li>
+  </ul>
+</li>
+<li><a href="standardxformers.html">Standard monad transformers</a>
+  <ul>
+  <li><a href="standardxformers.html#classes">The MonadTrans and MonadIO classes</a></li>
+  <li><a href="standardxformers.html#library">Transformer versions of standard monads</a></li>
+  </ul>  
+</li>
+<li><a href="xformeranatomy.html">Anatomy of a monad transformer</a>
+  <ul>
+  <li><a href="xformeranatomy.html#monad">Combined monad definition</a></li>
+  <li><a href="xformeranatomy.html#lift">Defining the lifting function</a></li>
+  <li><a href="xformeranatomy.html#functor">Functors</a></li>
+  </ul>
+</li>
+<li><a href="xformerexamples.html">More examples with monad transformers</a>
+  <ul>
+  <li><a href="xformerexamples.html#example22">WriterT with IO</a></li>
+  <li><a href="xformerexamples.html#example23">ReaderT with IO</a></li>
+  <li><a href="xformerexamples.html#example24">StateT with List</a></li>
+  </ul>
+</li>
+<li><a href="stacking.html">Managing the transformer stack</a>
+  <ul>
+  <li><a href="stacking.html#order">Selecting the correct order</a></li>
+  <li><a href="stacking.html#example">An example with multiple transformers</a></li>
+  <li><a href="stacking.html#lifting">Heavy lifting</a></li>
+  </ul>
+</li>  
+<li><a href="beyond.html">Continuing Exploration</a>
+</li>  
+</ul>
+<h2>Appendices</h2>
+<ul>
+<li><a href="analogy.html">Appendix I - A physical analogy for monads</a></li>
+<li><a href="examples.html">Appendix II - Haskell code examples</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left"></td>
+	<td align="center"></td>
+	<td align="right">Next: <a href="introduction.html">Introduction</a></td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+[
+Rule {disposition = Reject, pattern = Packet {from = Host 7, to = AnyHost, payload = AnyData}, logIt = True},
+Rule {disposition = Reject, pattern = Packet {from = AnyHost, to = AnyHost, payload = Data "exploit"}, logIt = True},
+Rule {disposition = Reject, pattern = Packet {from = AnyHost, to = AnyHost, payload = Data "network scan"}, logIt = True},
+Rule {disposition = Reject, pattern = Packet {from = Host 21, to = AnyHost, payload = AnyData}, logIt = True},
+Rule {disposition = Accept, pattern = Packet {from = AnyHost, to = Host 7, payload = Data "ssh login"}, logIt = True},
+Rule {disposition = Accept, pattern = Packet {from = AnyHost, to = Host 7, payload = AnyData}, logIt = False}
+]

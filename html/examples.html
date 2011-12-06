@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Haskell code examples</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="analogy.html">Appendix I - A physical analogy for monads</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%"></td>
+</tr>
+</table>
+
+<h1>Haskell code examples</h1>
+
+<p>
+This appendix contains a list of all of the code
+<a href="../examples/">examples</a> supplied with the tutorial.
+</p>
+
+<a name="example1"><h2><a href="../examples/example1.hs">Example 1</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="meet.html#example1">Meet the monads</a>.
+</p>
+
+<p>
+The example code introduces the monad concept without using
+Haskell typeclasses.  It shows how a monadic combinator can be used to
+simplify the construction of computations from sequences of
+computations which may not return a result. 
+</p>
+
+<a name="example2"><h2><a href="../examples/example2.hs">Example 2</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="class.html#example2">Doing it with class</a>.
+</p>
+
+<p>
+The example code builds on the first example, and shows how
+do-notation can be used with an instance of the <code>Monad</code> class
+(in this case, <code>Maybe</code> is the monad used).
+</p>
+
+<a name="example3"><h2><a href="../examples/example3.hs">Example 3</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example3">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code builds on the first two examples, and shows a
+somewhat atypical &mdash; but very powerful &mdash; use of 
+the <code>foldM</code> function outside of a do-block.
+</p>
+
+<a name="example4"><h2><a href="../examples/example4.hs">Example 4</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example4">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows a more typical use of the <code>foldM</code> function
+within a do-block.  It combines dictionary values read from different files 
+into a single dictionary using the <code>foldM</code> function within
+the IO monad.
+</p>
+
+<a name="example5"><h2><a href="../examples/example5.hs">Example 5</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example5">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows the use of the <code>filterM</code> function
+within a do-block.  It prints the subset of its arguments that
+specify directories and ignores non-directory arguments.
+</p>
+
+<a name="example6"><h2><a href="../examples/example6.hs">Example 6</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example6">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows the use of the <code>liftM</code> function
+within a do-block.  It looks up a name in a list and uses a lifted
+String manipulation function to modify it within the Maybe monad.
+</p>
+
+<a name="example7"><h2><a href="../examples/example7.hs">Example 7</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example7">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows a higher-order application of <code>liftM2</code>.
+It folds lifted operations within the List monad to produce lists
+of all combinations of elements combined with the lifted operator.
+</p>
+
+<a name="example8"><h2><a href="../examples/example8.hs">Example 8</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example8">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows a higher-order application of <code>ap</code>.
+It folds <code>ap</code> through a list of <code>Maybe&nbsp;(a->a)</code>
+functions to process sequences of commands.
+</p>
+
+<a name="example9"><h2><a href="../examples/example9.hs">Example 9</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example9">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows the use of <code>msum</code> in the Maybe monad
+to select the first variable match in a stack of binding environments.
+</p>
+
+<a name="example10"><h2><a href="../examples/example10.hs">Example 10</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="monadfns.html#example10">Monad support in Haskell</a>.
+</p>
+
+<p>
+The example code shows the use of <code>guard</code> in the Maybe monad
+to select only the records from a list that satisfy a predicate
+(equivalent to <code>filter</code>).
+</p>
+
+<a name="example11"><h2><a href="../examples/example11.hs">Example 11</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="maybemonad.html#example">The Maybe monad</a>.
+</p>
+
+<p>
+The example code shows how to use the <code>Maybe</code> monad
+to build complex queries from simpler queries that may fail to
+return a result.  The specific example used is looking up
+mail preferences for someone based on either their full name
+or a nickname. 
+</p>
+
+<a name="example12"><h2><a href="../examples/example12.hs">Example 12</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="errormonad.html#example">The Error monad</a>.
+</p>
+
+<p>
+The example code demonstrates the use of the <code>Either</code> 
+type constructor as an <code>Error</code> monad with a custom
+error type.  The example parses hexadecimal digits and uses the
+exception handling mechanism of the <code>Error</code> monad to
+provide informative error messages in the event of a parse failure.
+</p>
+
+<a name="example13"><h2><a href="../examples/example13.hs">Example 13</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="listmonad.html#example">The List monad</a>.
+</p>
+
+<p>
+The example code uses the built-in list type constructor as a
+monad for non-deterministic computation.
+The example demonstrates parsing an ambiguous grammar
+consisting of integers, hex values, and words.
+</p>
+
+<a name="example14"><h2><a href="../examples/example14.hs">Example 14</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="iomonad.html#example">The IO monad</a>.
+</p>
+
+<p>
+The example code implements a simple version of the standard
+Unix command "tr".  The example demonstrates use of the IO monad
+including implicit <code>fail</code> calls due to pattern matching
+failures and the use of <code>catcherror</code>.
+</p>
+
+<a name="example15"><h2><a href="../examples/example15.hs">Example 15</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="statemonad.html#example">The State monad</a>.
+</p>
+
+<p>
+The example code shows how the State monad can be used instead
+of explicitly passing state.  The example uses the State monad
+to manage the random number generator state while building a
+compound data value requiring multiple calls to the random
+number generator.
+</p>
+
+<a name="example16"><h2><a href="../examples/example16.hs">Example 16</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="readermonad.html#example">The Reader monad</a>.
+</p>
+
+<p>
+The example code shows how the Reader monad can be used to
+simplify computations involving a shared environment.
+The example uses the Reader monad to implement a simple
+template substitution system.  The example code demonstrates
+the use of the Parsec monadic parser combinator library. 
+</p>
+
+<a name="example17"><h2><a href="../examples/example17.hs">Example 17</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="writermonad.html#example">The Writer monad</a>.
+</p>
+
+<p>
+The example code shows how the Writer monad can be used to
+implement logging.  The example implements a very simple
+firewall simulator and uses the Writer monad to log the
+firewall activity.
+</p>
+
+<a name="example18"><h2><a href="../examples/example18.hs">Example 18</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="contmonad.html#example">The Continuation monad</a>.
+</p>
+
+<p>
+The example code shows how the Continuation monad's
+escape continuations work.  The example computes
+a complex transformation of a number.
+</p>
+
+<a name="example19"><h2><a href="../examples/example19.hs">Example 19</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="hardway.html#example1">Combining monads the hard way</a>.
+</p>
+
+<p>
+The example code shows how the Continuation monad can be
+nested within the IO monad given a suitable computational
+structure.  The example is a slight modification of example 18.
+</p>
+
+<a name="example20"><h2><a href="../examples/example20.hs">Example 20</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="hardway.html#example2">Combining monads the hard way</a>.
+</p>
+
+<p>
+The example code shows how the Continuation monad and IO
+monad can be used simultaneously, but without using
+monad transformers.  The example builds on examples 18 and 19.
+</p>
+
+<a name="example21"><h2><a href="../examples/example21.hs">Example 21</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="transformers.html#example">Monad transformers</a>.
+</p>
+
+<p>
+The example code shows how the transformer version of the
+Continuation monad can be used to create a combined monad
+for using continuations and doing I/O.
+The example builds on examples 18, 19 and 20.
+</p>
+
+<a name="example22"><h2><a href="../examples/example22.hs">Example 22</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="standardxformers.html#example1">Standard monad transformers</a>.
+</p>
+
+<p>
+The example code shows how the transformer version of the
+Writer monad can be used to create a combined monad
+for logging and doing I/O.
+The example adds timestamps to the log entries of the
+firewall simulator from example 17.
+</p>
+
+<a name="example23"><h2><a href="../examples/example23.hs">Example 23</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="standardxformers.html#example2">Standard monad transformers</a>.
+</p>
+
+<p>
+The example code shows how the transformer version of the
+Reader monad can be used to create a monad that combines
+a shared environment with I/O.  The example converts the template
+system of example 16 to use files as templates.
+</p>
+
+<a name="example24"><h2><a href="../examples/example24.hs">Example 24</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="standardxformers.html#example3">Standard monad transformers</a>.
+</p>
+
+<p>
+The example code uses the <code>StateT</code> transformer on the List
+monad to create a combined monad for doing non-deterministic stateful
+computations.  The example uses the combined monad to solve a logic
+problem.
+</p>
+
+<a name="example25"><h2><a href="../examples/example25.hs">Example 25</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="stacking.html#example">An example with multiple monad transformers</a>.
+</p>
+
+<p>
+The example code uses the <code>StateT</code> and <code>WriterT</code>
+transformers on the List monad to create a combined monad for doing
+non-deterministic stateful computations with logging.  The example uses the
+combined monad to solve the N-queens problem.
+</p>
+
+<a name="example26"><h2><a href="../examples/example26.hs">Example 26</a></h2></a>
+
+<p>
+This example is discussed in the section:
+<a href="stacking.html#lifting">Heavy lifting</a>.
+</p>
+
+<p>
+The example code demonstrates the use of the <code>lift</code> function
+and the necessity of managing its use in complex transformer stacks.
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="analogy.html">Apendix I - A physical analogy for monads</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%"></td>
+</tr>
+</table>
+	
+</body>
+</html>		

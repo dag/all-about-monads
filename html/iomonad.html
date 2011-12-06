@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>The IO monad</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="listmonad.html">The List monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="statemonad.html">The State monad</a></td>
+</tr>
+</table>	
+
+<h1>The IO monad</h1>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#definition">Definition</a></li>
+  <li><a href="#example">Example</a></li>
+</ul>
+
+<hr align="center" size="1" width="80%">
+
+<a name="overview"><h2>Overview</h2></a>
+
+<table width="100%" cellpadding="3">
+  <tr>
+    <th align="left">Computation type:</th>
+    <td>Computations which perform I/O</td>
+  </tr>
+  <tr>
+    <th align="left">Binding strategy:</th>
+    <td>I/O actions are executed in the order in which they are bound.
+    Failures throw I/O errors which can be caught and handled.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Useful for:</th>
+    <td>Performing I/O within a Haskell program.
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Zero and plus:</th>
+    <td>None.</td>
+  </tr>
+  <tr>
+    <th align="left">Example type:</th>
+    <td><a href="http://www.haskell.org/onlinelibrary/io.html">IO a</a>
+    </td>
+  </tr>
+</table>
+
+<a name="motivation"><h2>Motivation</h2></a>
+
+<p>
+Input/Output is incompatible with a pure functional language because
+it is not referentially transparent and side-effect free.  The IO
+monad solves this problem by confining computations that perform I/O
+within the IO monad. 
+</p>
+
+<a name="definition"><h2>Definition</h2></a>
+
+<p>
+The definition of the IO monad is platform-specific.
+No data constructors are exported and no functions are provided
+to remove data from the IO monad.  This makes the IO monad a
+one-way monad and is essential to ensuring safety of functional
+programs by isolating side-effects and non-referentially transparent
+actions within the imperative-style computations of the IO monad.
+</p>
+
+<p>
+Throughout this tutorial, we have referred to monadic values as
+computations.  However, values in the IO monad are often called
+<dfn>I/O actions</dfn> and we will use that terminology here.
+</p>
+
+<p>
+In Haskell, the top-level <code>main</code> function must have
+type <code>IO ()</code>, so that programs are typically
+structured at the top level as an imperative-style sequence of I/O
+actions and calls to functional-style code.  The functions exported
+from the <code>IO</code> module do not perform I/O themselves.
+They return I/O actions, which describe an I/O operation to
+be performed.  The I/O actions are combined within the IO monad (in a purely
+functional manner) to create more complex I/O actions, resulting in the final
+I/O action that is the <code>main</code> value of the program.
+</p>
+
+<p>
+The standard prelude and the
+<a href="http://www.haskell.org/onlinelibrary/io.html"><code>IO</code> module</a>
+define many functions that can be used within the IO monad and
+any Haskell programmer will undoubtedly be familiar with some of them.
+This tutorial will only discuss the monadic aspects of the IO monad,
+not the full range of functions available to perform I/O.
+</p>
+
+<p>
+The <code>IO</code> type constructor is a member of the <code>Monad</code>
+class and the <code>MonadError</code> class, where errors are of the type
+<code>IOError</code>.  <code>fail</code> is defined to throw an error built
+from the string argument.  Within the <code>IO</code> monad you can use
+the exception mechanisms from the <code>Control.Monad.Error</code> module
+in the Monad Template Library if you import the module.  The same mechanisms
+have alternative names exported by the <code>IO</code> module: <code>ioError</code>
+and <code>catch</code>.   
+</p>
+
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+instance Monad IO where
+    return a = ...   -- function from a -> IO a
+    m >>= k  = ...   -- executes the I/O action m and binds the value to k's input  
+    fail s   = ioError (userError s)
+
+data IOError = ...
+
+ioError :: IOError -> IO a
+ioError = ...
+   
+userError :: String -> IOError
+userError = ...
+
+catch :: IO a -> (IOError -> IO a) -> IO a 
+catch = ...
+
+try :: IO a -> IO (Either IOError a)
+try f = catch (do r <- f
+                  return (Right r))
+              (return . Left)
+</pre></td></tr></table>
+
+<p>
+The <code>IO</code> monad is incorporated into the Monad Template
+Library framework as an instance of the <code>MonadError</code> class.
+</p>
+
+<table bgcolor="#bbaa55" width="100%"><tr><td><pre>
+instance Error IOError where
+  ...
+
+instance MonadError IO where
+    throwError = ioError
+    catchError = catch
+</pre></td></tr></table>
+
+<p>
+The <code>IO</code> module exports a convenience function called
+<code>try</code> that executes an I/O action and returns
+<code>Right result</code> if the action succeeded or
+<code>Left IOError</code> if an I/O error was caught.
+</p>
+
+<a name="example"><h2>Example</h2></a>
+
+<p>
+This example shows a partial implementation of the "tr" command that
+copies the standard input stream to the standard output stream with
+character translations controlled by command-line arguments.  It
+demonstrates the use of the exception handling mechanisms of the
+<code>MonadError</code> class with the <code>IO</code> monad.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr bgcolor="#aabb55">
+<th align="left">Code available in <a href="../examples/example14.hs">example14.hs</a></th>
+</tr>
+<tr><td><pre>
+import Monad
+import System
+import IO
+import Control.Monad.Error
+
+-- translate char in set1 to corresponding char in set2
+translate :: String -> String -> Char -> Char
+translate []     _      c = c
+translate (x:xs) []     c = if x == c then ' ' else translate xs []  c
+translate (x:xs) [y]    c = if x == c then  y  else translate xs [y] c
+translate (x:xs) (y:ys) c = if x == c then  y  else translate xs ys  c
+
+-- translate an entire string
+translateString :: String -> String -> String -> String
+translateString set1 set2 str = map (translate set1 set2) str
+
+usage :: IOError -> IO ()
+usage e = do putStrLn "Usage: ex14 set1 set2"
+             putStrLn "Translates characters in set1 on stdin to the corresponding"
+             putStrLn "characters from set2 and writes the translation to stdout."
+
+-- translates stdin to stdout based on commandline arguments
+main :: IO ()
+main = (do [set1,set2] <- getArgs
+           contents    <- hGetContents stdin
+           putStr $ translateString set1 set2 contents)
+       `catchError` usage
+</pre></td></tr></table>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="listmonad.html">The List monad</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="statemonad.html">The State monad</a></td>
+</tr>
+</table>	
+
+</body>

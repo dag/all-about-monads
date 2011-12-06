@@ -1,0 +1,15 @@
+#!/bin/sh
+
+$1 template.txt '$<#1>'
+$1 template.txt '${language}' 'language=Haskell'
+$1 template.txt '$"#3"'
+$1 template.txt '$<#3>'
+$1 template.txt '===$<no such file>==='
+$1 template.txt '$<#2>'
+$1 template.txt '$<#2>' 'var=dog'
+$1 template.txt '$<#2|var=dog>'
+$1 template.txt '$<#4|variable=cat>'
+$1 template.txt '$<#5>' 'which=3'
+$1 template.txt '$<#5|which=3>'
+$1 template.txt '$<#6|which=5>'
+$1 template.txt '$<#6|which=5,var=dog,variable=cat>'

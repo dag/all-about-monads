@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Standard monad transformers</title>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="transformers.html">Monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="xformeranatomy.html">Anatomy of a monad transformer</a></td>
+</tr>
+</table>	
+
+<h1>Standard monad transformers</h1>
+
+<ul>
+  <li><a href="#classes">The MonadTrans and MonadIO classes</a></li>
+  <li><a href="#library">Transformer versions of standard monads</a></li>
+</ul>
+  
+<hr align="center" size="1" width="80%">
+
+<p>
+Haskell's base libraries provide support for monad transformers in the form of
+classes which represent monad transformers and special transformer versions of
+standard monads.
+</p>
+
+<a name="classes"><h2>The MonadTrans and MonadIO classes</h2></a>
+
+<p>
+The <code>MonadTrans</code> class is defined in
+<a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Trans.html">Control.Monad.Trans</a>
+and provides the single function <code>lift</code>.  The <code>lift</code> function
+lifts a monadic computation in the inner monad into the combined monad. 
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+class MonadTrans t where
+    lift :: (Monad m) => m a -> t m a
+</pre></tr></td></table>
+
+<p>
+Monads which provide optimized support for lifting IO operations
+are defined as members of the <code>MonadIO</code> class, which defines
+the <code>liftIO</code> function.
+</p>
+
+<table bgcolor="#bbaa55" width="100%">
+<tr><td><pre>
+class (Monad m) => MonadIO m where
+    liftIO :: IO a -> m a
+</pre></tr></td></table>
+
+<a name="library"><h2>Transformer versions of standard monads</h2></a>
+
+<p>
+The standard monads of the monad template library all have transformer versions
+which are defined consistently with their non-transformer versions.
+However, it is not the case the all monad transformers apply the same
+transformation.  We have seen that the <code>ContT</code> transformer
+turns continuations of the form <code>(a->r)->r</code> into continuations
+of the form <code>(a->m&nbsp;r)->m&nbsp;r</code>.  The <code>StateT</code>
+transformer is different.  It turns state transformer functions of
+the form <code>s->(a,s)</code> into state transformer functions of the
+form <code>s->m&nbsp;(a,s)</code>.  In general, there is no magic formula
+to create a transformer version of a monad &mdash; the form of each transformer
+depends on what makes sense in the context of its non-transformer type.
+</p>
+
+<table align="center" border="1" cellpadding="3">
+  <tr bgcolor="#cc9999"><th>Standard Monad</th>
+                        <th>Transformer Version</th>
+                        <th>Original Type</th>
+                        <th>Combined Type</th></tr>
+  <tr><td><a href="errormonad.html">Error</a></td>
+      <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Error.html#ErrorT">ErrorT</a></td>
+      <td><code>Either e a</code></td>
+      <td><code>m (Either e a)</code></td></tr>
+  <tr><td><a href="statemonad.html">State</a></td>
+      <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.State.html#StateT">StateT</a></td>
+      <td><code>s -> (a,s)</code></td>
+      <td><code>s -> m (a,s)</code></td></tr>
+  <tr><td><a href="readermonad.html">Reader</a></td>
+      <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Reader.html#ReaderT">ReaderT</a></td>
+      <td><code>r -> a</code></td>
+      <td><code>r -> m a</code></td></tr>
+  <tr><td><a href="writermonad.html">Writer</a></td>
+      <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Writer.html#WriterT">WriterT</a></td>
+      <td><code>(a,w)</code></td>
+      <td><code>m (a,w)</code></td></tr>
+  <tr><td><a href="contmonad.html">Cont</a></td>
+      <td><a href="http://www.haskell.org/ghc/docs/latest/html/base/Control.Monad.Cont.html#ContT">ContT</a></td>
+      <td><code>(a -> r) -> r</code></td>
+      <td><code>(a -> m r) -> m r</code></td></tr>       
+</table>
+
+<p><img src="info.png" align="left"></img>
+Order is important when combining monads.  
+<code>StateT&nbsp;s&nbsp;(Error&nbsp;e)</code> is different than
+<code>ErrorT&nbsp;e&nbsp;(State&nbsp;s)</code>.  The first produces a combined
+type of <code>s&nbsp;->&nbsp;Error&nbsp;e&nbsp;(a,s)</code>, in which the
+computation can either return a new state or generate an error.
+The second combination produces a combined type of
+<code>s&nbsp;->&nbsp;(Error&nbsp;e&nbsp;a,s)</code>, in which the computation
+always returns a new state, and the value can be an error or a normal value.<br clear="all">
+</p>
+
+<hr align="center" size="1" width="80%">
+
+<table width="100%">
+<tr>
+	<td align="left" width="33%">Prev: <a href="transformers.html">Standard monad transformers</a></td>
+	<td align="center" width="33%">TOC: <a href="index.html">Contents</a></td>
+	<td align="right" width="33%">Next: <a href="xformeranatomy.html">Anatomy of a monad transformer</a></td>
+</tr>
+</table>	
+
+</body>

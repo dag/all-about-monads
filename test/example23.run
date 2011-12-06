@@ -1,0 +1,15 @@
+#!/bin/sh
+
+$1 '$<template1.txt>'
+$1 '${language}' 'language=Haskell'
+$1 '$"template3.txt"'
+$1 '$<template3.txt>'
+$1 '===$<no such file>==='
+$1 '$<template2.txt>'
+$1 '$<template2.txt>' 'var=dog'
+$1 '$<template2.txt|var=dog>'
+$1 '$<template4.txt|variable=cat>'
+$1 '$<template5.txt>' 'which=3'
+$1 '$<template5.txt|which=3>'
+$1 '$<template6.txt|which=5>'
+$1 '$<template6.txt|which=5,var=dog,variable=cat>'

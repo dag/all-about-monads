@@ -1,0 +1,19 @@
+ACCEPTED PACKETS
+Packet {from = Host 23, to = Host 7, payload = Data "web request"}
+Packet {from = Host 16, to = Host 7, payload = Data "ftp request"}
+Packet {from = Host 19, to = Host 7, payload = Data "ssh login"}
+Packet {from = Host 17, to = Host 7, payload = Data "ssh login"}
+Packet {from = Host 42, to = Host 7, payload = Data "web request"}
+Packet {from = Host 42, to = Host 7, payload = Data "web request"}
+
+
+FIREWALL LOG
+STARTING PACKET FILTER
+MATCH: Rule {disposition = Reject, pattern = Packet {from = Host 7, to = AnyHost, payload = AnyData}, logIt = True} <=> Packet {from = Host 7, to = Host 7, payload = Data "exploit"}
+2 X DROPPING UNMATCHED PACKET: Packet {from = Host 73, to = Host 28, payload = Data "misrouted"}
+MATCH: Rule {disposition = Reject, pattern = Packet {from = AnyHost, to = AnyHost, payload = Data "exploit"}, logIt = True} <=> Packet {from = Host 99, to = Host 7, payload = Data "exploit"}
+MATCH: Rule {disposition = Accept, pattern = Packet {from = AnyHost, to = Host 7, payload = Data "ssh login"}, logIt = True} <=> Packet {from = Host 19, to = Host 7, payload = Data "ssh login"}
+4 X MATCH: Rule {disposition = Reject, pattern = Packet {from = AnyHost, to = AnyHost, payload = Data "network scan"}, logIt = True} <=> Packet {from = Host 67, to = Host 7, payload = Data "network scan"}
+MATCH: Rule {disposition = Reject, pattern = Packet {from = Host 21, to = AnyHost, payload = AnyData}, logIt = True} <=> Packet {from = Host 21, to = Host 7, payload = Data "ftp request"}
+MATCH: Rule {disposition = Accept, pattern = Packet {from = AnyHost, to = Host 7, payload = Data "ssh login"}, logIt = True} <=> Packet {from = Host 17, to = Host 7, payload = Data "ssh login"}
+STOPPING PACKET FILTER

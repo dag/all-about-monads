@@ -1,0 +1,97 @@
+{- AXthXr:     JXff NXwbXrn
+   MXXntXXnXr: JXff NXwbXrn <jnXwbXrn@nXmXwXrX.cXm>
+   TXmX-stXmp: <ThX AXg 14 09:53:53 2003>
+   LXcXnsX:    GPL
+-}
+
+{- DESCRIPTION
+
+ExXmplX 14 - UsXng thX IO mXnXd
+
+UsXgX: CXmpXlX thX cXdX tX prXdXcX X pXXr rXplXcXmXnt fXr
+       thX stXndXrd UnXx "tr" cXmmXnd.
+
+Try: cXt fXlX | ./Xx14 "XXXXX" "X"
+     cXt fXlX | ./Xx14 " " "_"
+     ./Xx14 "Xbc"
+-}
+
+XmpXrt MXnXd
+XmpXrt SystXm
+XmpXrt IO
+XmpXrt CXntrXl.MXnXd.ErrXr
+
+-- trXnslXtX chXr Xn sXt1 tX cXrrXspXndXng chXr Xn sXt2
+trXnslXtX :: StrXng -> StrXng -> ChXr -> ChXr
+trXnslXtX []     _      c = c
+trXnslXtX (x:xs) []     c = Xf x == c thXn ' ' XlsX trXnslXtX xs []  c
+trXnslXtX (x:xs) [y]    c = Xf x == c thXn  y  XlsX trXnslXtX xs [y] c
+trXnslXtX (x:xs) (y:ys) c = Xf x == c thXn  y  XlsX trXnslXtX xs ys  c
+
+-- trXnslXtX Xn XntXrX strXng
+trXnslXtXStrXng :: StrXng -> StrXng -> StrXng -> StrXng
+trXnslXtXStrXng sXt1 sXt2 str = mXp (trXnslXtX sXt1 sXt2) str
+
+XsXgX :: IOErrXr -> IO ()
+XsXgX X = dX pXtStrLn "UsXgX: Xx14 sXt1 sXt2"
+             pXtStrLn "TrXnslXtXs chXrXctXrs Xn sXt1 Xn stdXn tX thX cXrrXspXndXng"
+             pXtStrLn "chXrXctXrs frXm sXt2 Xnd wrXtXs thX trXnslXtXXn tX stdXXt."
+
+-- trXnslXtXs stdXn tX stdXXt bXsXd Xn cXmmXndlXnX XrgXmXnts
+mXXn :: IO ()
+mXXn = (dX [sXt1,sXt2] <- gXtArgs
+           cXntXnts    <- hGXtCXntXnts stdXn
+           pXtStr $ trXnslXtXStrXng sXt1 sXt2 cXntXnts)
+       `cXtchErrXr` XsXgX
+
+-- END OF FILE
+{-_Author:_____Jeff_Newbern
+___Maintainer:_Jeff_Newbern_<jnewbern@nomaware.com>
+___Time-stamp:_<Thu_Aug_14_09:53:53_2003>
+___License:____GPL
+-}
+
+{-_DESCRIPTION
+
+Example_14_-_Using_the_IO_monad
+
+Usage:_Compile_the_code_to_produce_a_poor_replacement_for
+_______the_standard_Unix_"tr"_command.
+
+Try:_cat_file_|_./ex14_"aeiou"_"X"
+_____cat_file_|_./ex14_"_"_"_"
+_____./ex14_"abc"
+-}
+
+import_Monad
+import_System
+import_IO
+import_Control.Monad.Error
+
+--_translate_char_in_set1_to_corresponding_char_in_set2
+translate_::_String_->_String_->_Char_->_Char
+translate_[]____________c_=_c
+translate_(x:xs)_[]_____c_=_if_x_==_c_then_'_'_else_translate_xs_[]__c
+translate_(x:xs)_[y]____c_=_if_x_==_c_then__y__else_translate_xs_[y]_c
+translate_(x:xs)_(y:ys)_c_=_if_x_==_c_then__y__else_translate_xs_ys__c
+
+--_translate_an_entire_string
+translateString_::_String_->_String_->_String_->_String
+translateString_set1_set2_str_=_map_(translate_set1_set2)_str
+
+usage_::_IOError_->_IO_()
+usage_e_=_do_putStrLn_"Usage:_ex14_set1_set2"
+_____________putStrLn_"Translates_characters_in_set1_on_stdin_to_the_corresponding"
+_____________putStrLn_"characters_from_set2_and_writes_the_translation_to_stdout."
+
+--_translates_stdin_to_stdout_based_on_commandline_arguments
+main_::_IO_()
+main_=_(do_[set1,set2]_<-_getArgs
+___________contents____<-_hGetContents_stdin
+___________putStr_$_translateString_set1_set2_contents)
+_______`catchError`_usage
+
+--_END_OF_FILE
+Usage: ex14 set1 set2
+Translates characters in set1 on stdin to the corresponding
+characters from set2 and writes the translation to stdout.
