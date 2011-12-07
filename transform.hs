@@ -19,7 +19,11 @@ transformBlock HorizontalRule
 
 transformBlock  x = x
 
+removeNull (Pandoc meta blocks)
+  = Pandoc meta $ filter (/= Null) blocks
+
 main = interact $ writeNative defaultWriterOptions
+                . removeNull
                 . bottomUp transformInline
                 . bottomUp transformBlock
                 . readNative
