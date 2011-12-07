@@ -14,6 +14,9 @@ transformBlock (Table [] [AlignLeft,AlignLeft,AlignLeft] [0.0,0.0,0.0] [] _)
 transformBlock (BulletList ([Plain [Link _ ('#':_,"")]]:_))
   = Null
 
+transformBlock HorizontalRule
+  = Null
+
 transformBlock  x = x
 
 main = interact $ writeNative defaultWriterOptions
