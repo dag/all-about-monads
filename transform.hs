@@ -11,6 +11,9 @@ transformBlock (CodeBlock _ code)
 transformBlock (Table [] [AlignLeft,AlignLeft,AlignLeft] [0.0,0.0,0.0] [] _)
   = Null
 
+transformBlock (BulletList ([Plain [Link _ ('#':_,"")]]:_))
+  = Null
+
 transformBlock  x = x
 
 main = interact $ writeNative defaultWriterOptions
