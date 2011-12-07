@@ -1,13 +1,19 @@
 import Text.Pandoc
 
-transform (CodeBlock _ code)
+transformInline (Code _ code)
+  = RawInline "mediawiki" $ "<code>" ++ code ++ "</code>"
+
+transformInline x = x
+
+transformBlock (CodeBlock _ code)
   = RawBlock "mediawiki" $ "<haskell>\n" ++ code ++ "\n</haskell>"
 
-transform (Table [] [AlignLeft,AlignLeft,AlignLeft] [0.0,0.0,0.0] [] _)
+transformBlock (Table [] [AlignLeft,AlignLeft,AlignLeft] [0.0,0.0,0.0] [] _)
   = Null
 
-transform x = x
+transformBlock  x = x
 
 main = interact $ writeNative defaultWriterOptions
-                . bottomUp transform
+                . bottomUp transformInline
+                . bottomUp transformBlock
                 . readNative
