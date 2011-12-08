@@ -4,4 +4,5 @@ toc := $(shell <html/index.html perl -ne '/<li>.+href="(.+\.html)"/ && print "ht
 all-about-monads.mediawiki: ${toc}
 	pandoc -f html -t native ${toc} \
 	    | runhaskell transform.hs \
-	    | pandoc -f native -t mediawiki -o $@
+	    | pandoc -f native -t mediawiki -o $@ \
+		-B before.mediawiki -A after.mediawiki

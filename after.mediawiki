@@ -1,0 +1,6 @@
+[[Category:Monad]]
+[[Category:Standard classes]]
+[[Category:Standard libraries]]
+[[Category:Standard packages]]
+[[Category:Standard types]]
+[[Category:Tutorials]]
