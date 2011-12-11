@@ -1,0 +1,22 @@
+Name:                all-about-monads
+Version:             0.1
+Synopsis:            Attempt to port All About Monads to HaskellWiki
+Description:        Attempt to port All About Monads to HaskellWiki
+Homepage:            http://www.haskell.org/haskellwiki/All_About_Monads
+License:             BSD3
+License-file:        LICENSE
+Author:              .
+Maintainer:          .
+Category:            Text
+Build-type:          Simple
+Cabal-version:       >=1.2
+
+Executable all-about-monads
+  Main-is:           transform.hs
+  Hs-source-dirs:    .
+  Build-depends:     base,
+                     pandoc
+
+
+
+  
